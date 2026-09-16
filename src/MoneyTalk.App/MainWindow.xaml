@@ -1,0 +1,47 @@
+<Window
+    x:Class="MoneyTalk.App.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <NavigationView
+        x:Name="RootNavigationView"
+        IsBackButtonVisible="Auto"
+        IsSettingsVisible="False"
+        SelectionChanged="RootNavigationView_SelectionChanged"
+        BackRequested="RootNavigationView_BackRequested"
+        Loaded="RootNavigationView_Loaded"
+        PaneTitle="MoneyTalk">
+
+        <NavigationView.MenuItems>
+            <NavigationViewItem Content="Dashboard" Tag="Dashboard" Icon="Home" />
+
+            <NavigationViewItem Content="Chart of Accounts" Tag="ChartOfAccounts" Icon="AllApps" />
+            <NavigationViewItem Content="General Ledger" Tag="Journal" Icon="List" />
+
+            <NavigationViewItem Content="Customers" Tag="Customers" Icon="ContactInfo" />
+            <NavigationViewItem Content="Invoices" Tag="Invoices" Icon="PostUpdate" />
+
+            <NavigationViewItem Content="Vendors" Tag="Vendors" Icon="People" />
+            <NavigationViewItem Content="Bills" Tag="Bills" Icon="Document" />
+
+            <NavigationViewItem Content="Products &amp; Services" Tag="Items" Icon="Tag" />
+
+            <NavigationViewItem Content="Bank Accounts" Tag="BankAccounts" Icon="Money" />
+            <NavigationViewItem Content="Reconciliation" Tag="Reconciliation" Icon="Sync" />
+
+            <NavigationViewItem Content="Budgets" Tag="Budgets" Icon="Calculator" />
+            <NavigationViewItem Content="Recurring Transactions" Tag="RecurringTransactions" Icon="Refresh" />
+
+            <NavigationViewItem Content="Reports" Tag="Reports" Icon="ReportDocument" />
+            <NavigationViewItem Content="AI Assistant" Tag="AiAssistant" Icon="Message" />
+        </NavigationView.MenuItems>
+
+        <NavigationView.FooterMenuItems>
+            <NavigationViewItem Content="Integrations" Tag="Integrations" Icon="Link" />
+            <NavigationViewItem Content="Company Settings" Tag="CompanySettings" Icon="Setting" />
+            <NavigationViewItem Content="Users" Tag="Users" Icon="Contact" />
+        </NavigationView.FooterMenuItems>
+
+        <Frame x:Name="ContentFrame" />
+    </NavigationView>
+</Window>

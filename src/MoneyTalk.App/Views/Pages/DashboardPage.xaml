@@ -1,0 +1,91 @@
+<Page
+    x:Class="MoneyTalk.App.Views.Pages.DashboardPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:MoneyTalk.App.Controls">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="20">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Dashboard" Style="{StaticResource PageTitleStyle}" Margin="0" />
+                    <TextBlock Text="{Binding CompanyName}" Style="{StaticResource MutedTextStyle}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button Content="New Invoice" Command="{Binding GoToInvoicesCommand}" />
+                    <Button Content="New Bill" Command="{Binding GoToBillsCommand}" />
+                    <Button Content="Ask AI Advisor" Style="{StaticResource AccentButtonStyle}" Command="{Binding GoToAiAssistantCommand}" />
+                </StackPanel>
+            </Grid>
+
+            <ProgressRing IsActive="{Binding IsBusy}" HorizontalAlignment="Left" />
+            <InfoBar IsOpen="{Binding ErrorMessage, Converter={StaticResource StringToBoolConverter}}" Severity="Error" Message="{Binding ErrorMessage}" />
+
+            <ItemsControl Margin="0,0,0,0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="16" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.Items>
+                    <controls:KpiCard LabelText="Total Cash" ValueText="{Binding TotalCashDisplay}" AccentBrush="{StaticResource MoneyTalkPositiveBrush}" />
+                    <controls:KpiCard LabelText="Accounts Receivable" ValueText="{Binding TotalArDisplay}" SubText="{Binding OverdueInvoicesSubText}" AccentBrush="{StaticResource MoneyTalkAccentBrush}" />
+                    <controls:KpiCard LabelText="Accounts Payable" ValueText="{Binding TotalApDisplay}" SubText="{Binding OverdueBillsSubText}" AccentBrush="{StaticResource MoneyTalkWarningBrush}" />
+                    <controls:KpiCard LabelText="Net Income (MTD)" ValueText="{Binding NetIncomeDisplay}" SubText="Income minus expenses this month" AccentBrush="{StaticResource MoneyTalkAccentBrush}" />
+                </ItemsControl.Items>
+            </ItemsControl>
+
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="30-Day Cash Forecast" Style="{StaticResource SectionHeaderStyle}" />
+                        <TextBlock Text="Projected cash balance based on open invoices, bills, and recurring transactions." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+                        <controls:SimpleLineChart Height="180" Values="{Binding CashTrendValues}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="This Month" Style="{StaticResource SectionHeaderStyle}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Income:" />
+                            <TextBlock Text="{Binding MonthToDateIncomeDisplay}" FontWeight="SemiBold" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Expenses:" />
+                            <TextBlock Text="{Binding MonthToDateExpensesDisplay}" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <StackPanel Spacing="8">
+                <TextBlock Text="AI Insights" Style="{StaticResource SectionHeaderStyle}" />
+                <ItemsControl ItemsSource="{Binding Insights}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <InfoBar IsOpen="True" IsClosable="False" Margin="0,0,0,8"
+                                     Title="{Binding Title}" Message="{Binding Detail}"
+                                     Severity="{Binding Severity, Converter={StaticResource InsightSeverityToInfoBarSeverityConverter}}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="Everything looks healthy — no insights right now." Style="{StaticResource MutedTextStyle}"
+                           Visibility="{Binding Insights.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=Invert}" />
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>
