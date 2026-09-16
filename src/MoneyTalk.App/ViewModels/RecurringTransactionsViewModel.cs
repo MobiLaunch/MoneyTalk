@@ -21,7 +21,7 @@ public partial class RecurringTransactionsViewModel : ViewModelBase
     [ObservableProperty] private string newTemplateName = string.Empty;
     [ObservableProperty] private DateTimeOffset newTemplateStartDate = DateTimeOffset.Now;
 
-    public static IReadOnlyList<string> FrequencyOptions { get; } = Enum.GetNames<RecurrenceFrequency>();
+    public IReadOnlyList<string> FrequencyOptions { get; } = Enum.GetNames<RecurrenceFrequency>();
     [ObservableProperty] private int selectedFrequencyIndex = (int)RecurrenceFrequency.Monthly;
 
     public RecurringTransactionsViewModel(Func<IUnitOfWork> unitOfWorkFactory, LocalSettingsService settingsService, RecurringTransactionService recurringTransactionService)
