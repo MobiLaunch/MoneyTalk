@@ -44,6 +44,10 @@ public partial class App : Application
         var settings = settingsService.Load();
         services.AddSingleton(settingsService);
 
+        // Constructed directly (not resolved from the container) so the client secrets below
+        // can be loaded before the rest of the service graph is built.
+        var secureTokenStore = new DpapiSecureTokenStore();
+
         services.AddDbContext<MoneyTalkDbContext>(
             options => options.UseSqlite($"Data Source={AppPaths.DatabaseFilePath}"),
             contextLifetime: ServiceLifetime.Transient,
@@ -55,7 +59,7 @@ public partial class App : Application
         services.AddTransient<IUnitOfWork>(sp => new EfUnitOfWork(sp.GetRequiredService<MoneyTalkDbContext>()));
         services.AddTransient<Func<IUnitOfWork>>(sp => () => sp.GetRequiredService<IUnitOfWork>());
 
-        services.AddSingleton<ISecureTokenStore, DpapiSecureTokenStore>();
+        services.AddSingleton<ISecureTokenStore>(secureTokenStore);
         services.AddSingleton<INavigationService, NavigationService>();
 
         // Core accounting engine — stateless, safe as singletons; every method takes the
@@ -77,12 +81,14 @@ public partial class App : Application
         services.AddSingleton(new SquareOptions
         {
             ClientId = settings.SquareClientId,
+            ClientSecret = secureTokenStore.GetSecret(SecretKeys.SquareClientSecret) ?? string.Empty,
             RedirectUri = settings.SquareRedirectUri,
             ApiBaseUrl = settings.SquareUseSandbox ? "https://connect.squareupsandbox.com" : "https://connect.squareup.com"
         });
         services.AddSingleton(new QuickBooksOptions
         {
             ClientId = settings.QuickBooksClientId,
+            ClientSecret = secureTokenStore.GetSecret(SecretKeys.QuickBooksClientSecret) ?? string.Empty,
             RedirectUri = settings.QuickBooksRedirectUri,
             UseSandbox = settings.QuickBooksUseSandbox
         });
@@ -96,7 +102,6 @@ public partial class App : Application
             sp.GetRequiredService<IHttpClientFactory>().CreateClient(), sp.GetRequiredService<GeminiOptions>()));
 
         // ViewModels — transient so each page navigation gets a fresh instance.
-        services.AddTransient<ShellViewModel>();
         services.AddTransient<OnboardingViewModel>();
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<ChartOfAccountsViewModel>();

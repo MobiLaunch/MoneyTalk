@@ -5,6 +5,8 @@ using MoneyTalk.App.Services;
 using MoneyTalk.Core.Entities;
 using MoneyTalk.Core.Interfaces;
 using MoneyTalk.Core.Interfaces.Integrations;
+using MoneyTalk.Integrations.QuickBooks;
+using MoneyTalk.Integrations.Square;
 
 namespace MoneyTalk.App.ViewModels;
 
@@ -20,16 +22,22 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
     private readonly ISecureTokenStore _secureTokenStore;
     private readonly ISquareClient _squareClient;
     private readonly IQuickBooksClient _quickBooksClient;
+    private readonly SquareOptions _squareOptions;
+    private readonly QuickBooksOptions _quickBooksOptions;
 
     [ObservableProperty] private string geminiApiKeyInput = string.Empty;
     [ObservableProperty] private bool hasGeminiKey;
     [ObservableProperty] private string geminiStatusMessage = string.Empty;
 
+    [ObservableProperty] private string squareClientIdInput = string.Empty;
+    [ObservableProperty] private string squareClientSecretInput = string.Empty;
     [ObservableProperty] private bool squareIsConnected;
     [ObservableProperty] private string squareAuthorizationUrl = string.Empty;
     [ObservableProperty] private string squareAuthCodeInput = string.Empty;
     [ObservableProperty] private string squareStatusMessage = string.Empty;
 
+    [ObservableProperty] private string quickBooksClientIdInput = string.Empty;
+    [ObservableProperty] private string quickBooksClientSecretInput = string.Empty;
     [ObservableProperty] private bool quickBooksIsConnected;
     [ObservableProperty] private string quickBooksAuthorizationUrl = string.Empty;
     [ObservableProperty] private string quickBooksAuthCodeInput = string.Empty;
@@ -41,18 +49,62 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
 
     public IntegrationsSettingsViewModel(
         Func<IUnitOfWork> unitOfWorkFactory, LocalSettingsService settingsService,
-        ISecureTokenStore secureTokenStore, ISquareClient squareClient, IQuickBooksClient quickBooksClient)
+        ISecureTokenStore secureTokenStore, ISquareClient squareClient, IQuickBooksClient quickBooksClient,
+        SquareOptions squareOptions, QuickBooksOptions quickBooksOptions)
         : base(unitOfWorkFactory, settingsService)
     {
         _secureTokenStore = secureTokenStore;
         _squareClient = squareClient;
         _quickBooksClient = quickBooksClient;
+        _squareOptions = squareOptions;
+        _quickBooksOptions = quickBooksOptions;
+    }
+
+    [RelayCommand]
+    private void SaveSquareAppCredentials()
+    {
+        _squareOptions.ClientId = SquareClientIdInput.Trim();
+        if (!string.IsNullOrWhiteSpace(SquareClientSecretInput))
+        {
+            _squareOptions.ClientSecret = SquareClientSecretInput.Trim();
+            _secureTokenStore.SaveSecret(SecretKeys.SquareClientSecret, _squareOptions.ClientSecret);
+        }
+
+        var settings = SettingsService.Load();
+        settings.SquareClientId = _squareOptions.ClientId;
+        SettingsService.Save(settings);
+
+        SquareClientSecretInput = string.Empty;
+        SquareAuthorizationUrl = _squareClient.BuildAuthorizationUrl(
+            Guid.NewGuid().ToString("N"), new[] { "PAYMENTS_READ", "MERCHANT_PROFILE_READ" });
+        SquareStatusMessage = "Square app credentials saved.";
+    }
+
+    [RelayCommand]
+    private void SaveQuickBooksAppCredentials()
+    {
+        _quickBooksOptions.ClientId = QuickBooksClientIdInput.Trim();
+        if (!string.IsNullOrWhiteSpace(QuickBooksClientSecretInput))
+        {
+            _quickBooksOptions.ClientSecret = QuickBooksClientSecretInput.Trim();
+            _secureTokenStore.SaveSecret(SecretKeys.QuickBooksClientSecret, _quickBooksOptions.ClientSecret);
+        }
+
+        var settings = SettingsService.Load();
+        settings.QuickBooksClientId = _quickBooksOptions.ClientId;
+        SettingsService.Save(settings);
+
+        QuickBooksClientSecretInput = string.Empty;
+        QuickBooksAuthorizationUrl = _quickBooksClient.BuildAuthorizationUrl(Guid.NewGuid().ToString("N"));
+        QuickBooksStatusMessage = "QuickBooks app credentials saved.";
     }
 
     [RelayCommand]
     public async Task LoadAsync()
     {
         HasGeminiKey = !string.IsNullOrWhiteSpace(_secureTokenStore.GetSecret(SecretKeys.GeminiApiKey));
+        SquareClientIdInput = _squareOptions.ClientId;
+        QuickBooksClientIdInput = _quickBooksOptions.ClientId;
 
         await RunBusyAsync(async () =>
         {

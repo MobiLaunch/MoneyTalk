@@ -22,6 +22,11 @@
                 <StackPanel Spacing="10">
                     <TextBlock Text="Square" Style="{StaticResource SectionHeaderStyle}" />
                     <TextBlock Text="✓ Connected" Foreground="{StaticResource MoneyTalkPositiveBrush}" Visibility="{Binding SquareIsConnected, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock Text="Register a free app at developer.squareup.com/apps, then paste its Client ID/Secret here." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+                    <TextBox Header="Client ID" Text="{Binding SquareClientIdInput, Mode=TwoWay}" />
+                    <PasswordBox Header="Client secret" Password="{Binding SquareClientSecretInput, Mode=TwoWay}" />
+                    <Button Content="Save App Credentials" Command="{Binding SaveSquareAppCredentialsCommand}" HorizontalAlignment="Left" />
+
                     <TextBlock TextWrapping="Wrap" Style="{StaticResource MutedTextStyle}">
                         1. Click "Open Square Authorization" — approve access in your browser.
                         2. Copy the "code" value from the address bar you land on afterward.
@@ -42,6 +47,11 @@
                 <StackPanel Spacing="10">
                     <TextBlock Text="QuickBooks Online" Style="{StaticResource SectionHeaderStyle}" />
                     <TextBlock Text="✓ Connected" Foreground="{StaticResource MoneyTalkPositiveBrush}" Visibility="{Binding QuickBooksIsConnected, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock Text="Register a free app at developer.intuit.com, then paste its Client ID/Secret here." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+                    <TextBox Header="Client ID" Text="{Binding QuickBooksClientIdInput, Mode=TwoWay}" />
+                    <PasswordBox Header="Client secret" Password="{Binding QuickBooksClientSecretInput, Mode=TwoWay}" />
+                    <Button Content="Save App Credentials" Command="{Binding SaveQuickBooksAppCredentialsCommand}" HorizontalAlignment="Left" />
+
                     <TextBlock TextWrapping="Wrap" Style="{StaticResource MutedTextStyle}">
                         1. Click "Open QuickBooks Authorization" — sign in and approve access.
                         2. Copy the "code" and "realmId" values from the address bar you land on afterward.
