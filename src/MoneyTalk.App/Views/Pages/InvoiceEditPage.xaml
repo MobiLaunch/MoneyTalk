@@ -1,0 +1,116 @@
+<Page
+    x:Class="MoneyTalk.App.Views.Pages.InvoiceEditPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dg="using:CommunityToolkit.WinUI.Controls">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="16" MaxWidth="1000">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Invoice" Style="{StaticResource PageTitleStyle}" Margin="0" />
+                <Button Grid.Column="1" Content="Back" Command="{Binding GoBackCommand}" />
+            </Grid>
+
+            <InfoBar IsOpen="{Binding ErrorMessage, Converter={StaticResource StringToBoolConverter}}" Severity="Error" Message="{Binding ErrorMessage}" />
+
+            <Border Style="{StaticResource CardBorderStyle}">
+                <Grid ColumnSpacing="16" RowSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <ComboBox Grid.Row="0" Grid.Column="0" Header="Customer" ItemsSource="{Binding Customers}"
+                              SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}" DisplayMemberPath="Name"
+                              IsEnabled="{Binding IsDraft}" HorizontalAlignment="Stretch" />
+                    <TextBox Grid.Row="0" Grid.Column="1" Header="Invoice #" Text="{Binding InvoiceNumber, Mode=TwoWay}" IsEnabled="{Binding IsDraft}" />
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Status}" Style="{StaticResource SectionHeaderStyle}" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+
+                    <DatePicker Grid.Row="1" Grid.Column="0" Header="Invoice date" Date="{Binding InvoiceDate, Mode=TwoWay}" IsEnabled="{Binding IsDraft}" />
+                    <DatePicker Grid.Row="1" Grid.Column="1" Header="Due date" Date="{Binding DueDate, Mode=TwoWay}" IsEnabled="{Binding IsDraft}" />
+                    <TextBox Grid.Row="1" Grid.Column="2" Header="Memo" Text="{Binding Memo, Mode=TwoWay}" IsEnabled="{Binding IsDraft}" />
+                </Grid>
+            </Border>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Line Items" Style="{StaticResource SectionHeaderStyle}" />
+                <Button Grid.Column="1" Content="Add Line" Click="AddLine_Click" IsEnabled="{Binding IsDraft}" />
+            </Grid>
+
+            <dg:DataGrid ItemsSource="{Binding Lines}" AutoGenerateColumns="False" HeadersVisibility="Column"
+                         GridLinesVisibility="Horizontal" MinHeight="120" MaxHeight="300"
+                         CanUserSortColumns="False" IsReadOnly="False">
+                <dg:DataGrid.Columns>
+                    <dg:DataGridTextColumn Header="Description" Binding="{Binding Description, Mode=TwoWay}" Width="3*" />
+                    <dg:DataGridTextColumn Header="Qty" Binding="{Binding Quantity, Mode=TwoWay}" Width="*" />
+                    <dg:DataGridTextColumn Header="Unit Price" Binding="{Binding UnitPrice, Mode=TwoWay}" Width="*" />
+                    <dg:DataGridTextColumn Header="Amount" Binding="{Binding Amount}" IsReadOnly="True" Width="*" />
+                    <dg:DataGridTemplateColumn Header="" Width="60">
+                        <dg:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="✕" Click="RemoveLine_Click" Tag="{Binding}" />
+                            </DataTemplate>
+                        </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+                </dg:DataGrid.Columns>
+            </dg:DataGrid>
+
+            <StackPanel HorizontalAlignment="Right" Spacing="4" MinWidth="240">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Subtotal" />
+                    <TextBlock Grid.Column="1" Text="{Binding SubtotalDisplay}" />
+                </Grid>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Total" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1" Text="{Binding TotalDisplay}" FontWeight="SemiBold" />
+                </Grid>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Paid" />
+                    <TextBlock Grid.Column="1" Text="{Binding AmountPaidDisplay}" />
+                </Grid>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Balance Due" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1" Text="{Binding BalanceDisplay}" FontWeight="SemiBold" />
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Content="Save Draft" Command="{Binding SaveDraftCommand}" Visibility="{Binding IsDraft, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <Button Content="Post Invoice" Style="{StaticResource AccentButtonStyle}" Command="{Binding PostCommand}" Visibility="{Binding IsDraft, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <Button Content="Record Payment" Style="{StaticResource AccentButtonStyle}" Click="RecordPayment_Click" Visibility="{Binding CanRecordPayment, Converter={StaticResource BoolToVisibilityConverter}}" />
+            </StackPanel>
+
+            <ProgressRing IsActive="{Binding IsBusy}" HorizontalAlignment="Right" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>
