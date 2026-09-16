@@ -1,0 +1,41 @@
+<Page
+    x:Class="MoneyTalk.App.Views.Pages.BudgetsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dg="using:CommunityToolkit.WinUI.Controls">
+
+    <Grid Padding="24" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Budgets" Style="{StaticResource PageTitleStyle}" Margin="0" />
+            <Button Grid.Column="1" Content="New Budget" Style="{StaticResource AccentButtonStyle}" Click="NewBudget_Click" VerticalAlignment="Center" />
+        </Grid>
+
+        <ComboBox Grid.Row="1" Header="Budget" ItemsSource="{Binding Budgets}" SelectedItem="{Binding SelectedBudget, Mode=TwoWay}"
+                  DisplayMemberPath="Name" MinWidth="280" HorizontalAlignment="Left" />
+
+        <Button Grid.Row="2" Content="Add Budget Line" Click="AddBudgetLine_Click" HorizontalAlignment="Left" />
+
+        <dg:DataGrid Grid.Row="3" ItemsSource="{Binding BudgetLines}" AutoGenerateColumns="False"
+                     IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+            <dg:DataGrid.Columns>
+                <dg:DataGridTextColumn Header="Account" Binding="{Binding AccountName}" Width="220" />
+                <dg:DataGridTextColumn Header="Month" Binding="{Binding Month}" Width="80" />
+                <dg:DataGridTextColumn Header="Budget" Binding="{Binding BudgetAmount}" Width="120" />
+                <dg:DataGridTextColumn Header="Actual" Binding="{Binding ActualAmount}" Width="120" />
+                <dg:DataGridTextColumn Header="Variance" Binding="{Binding Variance}" Width="120" />
+                <dg:DataGridTextColumn Header="Variance %" Binding="{Binding VariancePercent}" Width="100" />
+            </dg:DataGrid.Columns>
+        </dg:DataGrid>
+    </Grid>
+</Page>
