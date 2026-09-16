@@ -1,0 +1,62 @@
+<Page
+    x:Class="MoneyTalk.App.Views.Pages.IntegrationsSettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="20" MaxWidth="720">
+            <TextBlock Text="Integrations" Style="{StaticResource PageTitleStyle}" Margin="0" />
+
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Gemini AI Advisor" Style="{StaticResource SectionHeaderStyle}" />
+                    <TextBlock Text="Get a free API key at aistudio.google.com/apikey, then paste it below to enable the AI Assistant page." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+                    <TextBlock Text="✓ A Gemini API key is saved." Foreground="{StaticResource MoneyTalkPositiveBrush}" Visibility="{Binding HasGeminiKey, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <PasswordBox Header="Gemini API key" Password="{Binding GeminiApiKeyInput, Mode=TwoWay}" />
+                    <Button Content="Save Key" Style="{StaticResource AccentButtonStyle}" Command="{Binding SaveGeminiKeyCommand}" HorizontalAlignment="Left" />
+                    <TextBlock Text="{Binding GeminiStatusMessage}" Style="{StaticResource MutedTextStyle}" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Square" Style="{StaticResource SectionHeaderStyle}" />
+                    <TextBlock Text="✓ Connected" Foreground="{StaticResource MoneyTalkPositiveBrush}" Visibility="{Binding SquareIsConnected, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock TextWrapping="Wrap" Style="{StaticResource MutedTextStyle}">
+                        1. Click "Open Square Authorization" — approve access in your browser.
+                        2. Copy the "code" value from the address bar you land on afterward.
+                        3. Paste it below and click Connect.
+                    </TextBlock>
+                    <Button Content="Open Square Authorization" Click="OpenSquareAuth_Click" HorizontalAlignment="Left" />
+                    <TextBox Header="Authorization code" Text="{Binding SquareAuthCodeInput, Mode=TwoWay}" />
+                    <Button Content="Connect Square" Style="{StaticResource AccentButtonStyle}" Command="{Binding CompleteSquareConnectionCommand}" HorizontalAlignment="Left" />
+
+                    <ComboBox Header="Deposit Square payments into" ItemsSource="{Binding BankAccounts}"
+                              SelectedItem="{Binding SelectedSquareDepositAccount, Mode=TwoWay}" DisplayMemberPath="BankName" HorizontalAlignment="Stretch" />
+                    <Button Content="Sync Last 30 Days of Payments" Command="{Binding SyncSquareCommand}" HorizontalAlignment="Left" />
+                    <TextBlock Text="{Binding SquareStatusMessage}" Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="QuickBooks Online" Style="{StaticResource SectionHeaderStyle}" />
+                    <TextBlock Text="✓ Connected" Foreground="{StaticResource MoneyTalkPositiveBrush}" Visibility="{Binding QuickBooksIsConnected, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock TextWrapping="Wrap" Style="{StaticResource MutedTextStyle}">
+                        1. Click "Open QuickBooks Authorization" — sign in and approve access.
+                        2. Copy the "code" and "realmId" values from the address bar you land on afterward.
+                        3. Paste both below and click Connect.
+                    </TextBlock>
+                    <Button Content="Open QuickBooks Authorization" Click="OpenQuickBooksAuth_Click" HorizontalAlignment="Left" />
+                    <TextBox Header="Authorization code" Text="{Binding QuickBooksAuthCodeInput, Mode=TwoWay}" />
+                    <TextBox Header="Realm ID (company id)" Text="{Binding QuickBooksRealmIdInput, Mode=TwoWay}" />
+                    <Button Content="Connect QuickBooks" Style="{StaticResource AccentButtonStyle}" Command="{Binding CompleteQuickBooksConnectionCommand}" HorizontalAlignment="Left" />
+                    <TextBlock Text="{Binding QuickBooksStatusMessage}" Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <InfoBar IsOpen="{Binding ErrorMessage, Converter={StaticResource StringToBoolConverter}}" Severity="Error" Message="{Binding ErrorMessage}" />
+            <ProgressRing IsActive="{Binding IsBusy}" HorizontalAlignment="Left" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

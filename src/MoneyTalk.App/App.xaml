@@ -24,6 +24,8 @@
             <conv:SignedCurrencyBrushConverter x:Key="SignedCurrencyBrushConverter" />
             <conv:ShortDateConverter x:Key="ShortDateConverter" />
             <conv:InsightSeverityToInfoBarSeverityConverter x:Key="InsightSeverityToInfoBarSeverityConverter" />
+            <conv:MessageRoleToAlignmentConverter x:Key="MessageRoleToAlignmentConverter" />
+            <conv:MessageRoleToBrushConverter x:Key="MessageRoleToBrushConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
