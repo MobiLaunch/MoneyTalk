@@ -1,0 +1,78 @@
+<Page
+    x:Class="MoneyTalk.App.Views.Pages.ReconciliationPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dg="using:CommunityToolkit.WinUI.Controls">
+
+    <Grid Padding="24" RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Cash Reconciliation" Style="{StaticResource PageTitleStyle}" Margin="0" />
+
+        <ComboBox Grid.Row="1" Header="Bank account" ItemsSource="{Binding BankAccounts}"
+                  SelectedItem="{Binding SelectedBankAccount, Mode=TwoWay}" DisplayMemberPath="BankName"
+                  MinWidth="280" HorizontalAlignment="Left" />
+
+        <Border Grid.Row="2" Style="{StaticResource CardBorderStyle}"
+                Visibility="{Binding HasActiveSession, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}">
+            <StackPanel Spacing="12">
+                <TextBlock Text="Start a new reconciliation" Style="{StaticResource SectionHeaderStyle}" />
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <DatePicker Grid.Column="0" Header="Statement date" Date="{Binding StatementDate, Mode=TwoWay}" />
+                    <NumberBox Grid.Column="1" Header="Beginning balance" Value="{Binding StatementBeginningBalance, Mode=TwoWay}" SpinButtonPlacementMode="Inline" />
+                    <NumberBox Grid.Column="2" Header="Statement ending balance" Value="{Binding StatementEndingBalance, Mode=TwoWay}" SpinButtonPlacementMode="Inline" />
+                    <Button Grid.Column="3" Content="Start" Style="{StaticResource AccentButtonStyle}" VerticalAlignment="Bottom" Command="{Binding StartSessionCommand}" />
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="3" RowSpacing="12" Visibility="{Binding HasActiveSession, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" ColumnSpacing="24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Cleared Balance" Style="{StaticResource KpiLabelStyle}" />
+                    <TextBlock Text="{Binding ClearedBalanceDisplay}" Style="{StaticResource KpiValueStyle}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="Difference" Style="{StaticResource KpiLabelStyle}" />
+                    <TextBlock Text="{Binding DifferenceDisplay}" Style="{StaticResource KpiValueStyle}" />
+                </StackPanel>
+                <Button Grid.Column="3" Content="Auto-Match" Command="{Binding AutoMatchCommand}" VerticalAlignment="Center" />
+                <Button Grid.Column="4" Content="Finish Reconciling" Style="{StaticResource AccentButtonStyle}"
+                        Command="{Binding CompleteSessionCommand}" IsEnabled="{Binding IsBalanced}" VerticalAlignment="Center" />
+            </Grid>
+
+            <dg:DataGrid Grid.Row="1" ItemsSource="{Binding Transactions}" AutoGenerateColumns="False"
+                         GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                <dg:DataGrid.Columns>
+                    <dg:DataGridCheckBoxColumn Header="Cleared" Binding="{Binding IsCleared, Mode=TwoWay}" Width="70" />
+                    <dg:DataGridTextColumn Header="Date" Binding="{Binding Date}" IsReadOnly="True" Width="120" />
+                    <dg:DataGridTextColumn Header="Description" Binding="{Binding Description}" IsReadOnly="True" Width="3*" />
+                    <dg:DataGridTextColumn Header="Amount" Binding="{Binding Amount}" IsReadOnly="True" Width="120" />
+                </dg:DataGrid.Columns>
+            </dg:DataGrid>
+        </Grid>
+    </Grid>
+</Page>

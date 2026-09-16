@@ -19,6 +19,10 @@ public partial class App : Application
 {
     public static IServiceProvider Services { get; private set; } = null!;
 
+    /// <summary>Exposed for WinRT interop calls that need an HWND (file/folder pickers) — see
+    /// <c>WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow)</c>.</summary>
+    public static Window MainWindow { get; private set; } = null!;
+
     private readonly IHost _host;
     private Window? _window;
 
@@ -123,6 +127,7 @@ public partial class App : Application
         }
 
         _window = new MainWindow();
+        MainWindow = _window;
         _window.Activate();
     }
 }
