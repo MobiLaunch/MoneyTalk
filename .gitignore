@@ -1,0 +1,72 @@
+## .NET / Visual Studio / WinUI3
+
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+ARM/
+ARM64/
+BundleArtifacts/
+AppPackages/
+AppX/
+*.appx
+*.appxbundle
+*.appxupload
+*.appxsym
+*.msix
+*.msixbundle
+*.cer
+*.pfx
+
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+# NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+.nuget/
+
+# Rider / JetBrains
+.idea/
+
+# Build results
+[Bb]uild/
+[Ll]og/
+[Ll]ogs/
+
+# Test results
+TestResults/
+[Cc]overage/
+*.trx
+
+# Local settings / secrets (never commit API keys or tokens)
+appsettings.local.json
+appsettings.*.local.json
+secrets.json
+*.env
+.env.*
+local.settings.json
+
+# SQLite local databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# EF Core
+**/Migrations/*.Designer.cs.orig
