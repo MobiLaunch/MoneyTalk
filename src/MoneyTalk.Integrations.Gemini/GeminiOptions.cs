@@ -1,0 +1,16 @@
+namespace MoneyTalk.Integrations.Gemini;
+
+/// <summary>Get an API key at https://aistudio.google.com/apikey. The key is supplied per-call
+/// (see <see cref="Core.Interfaces.Integrations.IGeminiClient"/>) rather than stored on this
+/// options object, since it lives in the OS credential vault, not app configuration.</summary>
+public class GeminiOptions
+{
+    public string ApiBaseUrl { get; set; } = "https://generativelanguage.googleapis.com/v1beta";
+
+    /// <summary>Swap this in Settings if Google renames/retires a model; the client never
+    /// hardcodes a single model id anywhere else.</summary>
+    public string ModelId { get; set; } = "gemini-2.0-flash";
+
+    public double Temperature { get; set; } = 0.4;
+    public int MaxOutputTokens { get; set; } = 2048;
+}
