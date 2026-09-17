@@ -4,7 +4,7 @@ using MoneyTalk.Core.Interfaces;
 
 namespace MoneyTalk.Data.Repositories;
 
-public class EfUnitOfWork : IUnitOfWork, IDisposable
+public class EfUnitOfWork : IUnitOfWork
 {
     private readonly MoneyTalkDbContext _context;
 

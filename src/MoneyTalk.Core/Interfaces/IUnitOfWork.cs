@@ -3,8 +3,10 @@ using MoneyTalk.Core.Entities;
 namespace MoneyTalk.Core.Interfaces;
 
 /// <summary>One repository per aggregate root, plus a single SaveChangesAsync so a service
-/// method (e.g. "post an invoice") can touch several tables and commit them atomically.</summary>
-public interface IUnitOfWork
+/// method (e.g. "post an invoice") can touch several tables and commit them atomically.
+/// Disposable because every implementation wraps a DbContext-like resource; callers use
+/// <c>using var uow = ...</c> around a single unit of work.</summary>
+public interface IUnitOfWork : IDisposable
 {
     IRepository<Company> Companies { get; }
     IRepository<Account> Accounts { get; }
