@@ -1,0 +1,133 @@
+<Page
+    x:Class="MoneyTalk.App.Views.Pages.TradeInEditPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:MoneyTalk.App.Controls">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="16" MaxWidth="1000">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Trade-In" Style="{StaticResource PageTitleStyle}" Margin="0" />
+                <Button Grid.Column="1" Content="Back" Command="{Binding GoBackCommand}" />
+            </Grid>
+
+            <controls:BusyErrorBar IsBusy="{Binding IsBusy}" ErrorMessage="{Binding ErrorMessage}" />
+
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Device Identity" Style="{StaticResource SectionHeaderStyle}" />
+                    <Grid ColumnSpacing="16" RowSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <ComboBox Grid.Row="0" Grid.Column="0" Header="Customer" ItemsSource="{Binding Customers}"
+                                  SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}" DisplayMemberPath="Name"
+                                  PlaceholderText="Walk-in (no customer)" HorizontalAlignment="Stretch" />
+                        <TextBox Grid.Row="0" Grid.Column="1" Header="Brand" Text="{Binding Brand, Mode=TwoWay}" />
+                        <TextBox Grid.Row="0" Grid.Column="2" Header="Model" Text="{Binding Model, Mode=TwoWay}" />
+
+                        <TextBox Grid.Row="1" Grid.Column="0" Header="Model Number (optional)" Text="{Binding ModelNumber, Mode=TwoWay}" />
+                        <TextBox Grid.Row="1" Grid.Column="1" Header="Storage (optional)" Text="{Binding Storage, Mode=TwoWay}" />
+                        <TextBox Grid.Row="1" Grid.Column="2" Header="Color (optional)" Text="{Binding Color, Mode=TwoWay}" />
+                    </Grid>
+
+                    <TextBox Header="IMEI (optional)" Text="{Binding Imei, Mode=TwoWay}" />
+                    <TextBlock Text="⚠ That IMEI doesn't look valid (failed the checksum check) — double-check it." Foreground="{StaticResource MoneyTalkNegativeBrush}"
+                               Visibility="{Binding ShowInvalidImeiWarning, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Condition" Style="{StaticResource SectionHeaderStyle}" />
+                    <Grid ColumnSpacing="16" RowSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox Grid.Column="0" Header="Overall Grade" ItemsSource="{Binding ConditionGradeOptions}" SelectedItem="{Binding ConditionGradeText, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                        <ComboBox Grid.Column="1" Header="Screen" ItemsSource="{Binding ScreenConditionOptions}" SelectedItem="{Binding ScreenConditionText, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                        <NumberBox Grid.Column="2" Header="Battery Health %" Value="{Binding BatteryHealthPercent, Mode=TwoWay}" Minimum="0" Maximum="100" SpinButtonPlacementMode="Compact" />
+                        <NumberBox Grid.Column="3" Header="Age (years)" Value="{Binding AgeYears, Mode=TwoWay}" Minimum="0" SpinButtonPlacementMode="Compact" />
+                    </Grid>
+
+                    <TextBox Header="Functional issues (comma-separated, e.g. charging_port, camera)" Text="{Binding FunctionalIssuesText, Mode=TwoWay}" />
+                    <TextBox Header="Cosmetic issues (comma-separated, e.g. dents, back_cracked)" Text="{Binding CosmeticIssuesText, Mode=TwoWay}" />
+                    <TextBox Header="Accessories included (comma-separated: original_box, charger, earphones, case)" Text="{Binding AccessoriesText, Mode=TwoWay}" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <CheckBox Content="iCloud locked" IsChecked="{Binding ICloudLocked, Mode=TwoWay}" />
+                        <CheckBox Content="FRP locked" IsChecked="{Binding FrpLocked, Mode=TwoWay}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Pricing" Style="{StaticResource SectionHeaderStyle}" />
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <NumberBox Grid.Column="0" Header="Market Price" Value="{Binding MarketPrice, Mode=TwoWay}" Minimum="0" SpinButtonPlacementMode="Compact" />
+                        <Button Grid.Column="1" Content="Look Up Price" Command="{Binding LookUpMarketPriceCommand}" VerticalAlignment="Bottom" Margin="8,0" />
+                        <NumberBox Grid.Column="2" Header="Repair / Refurb Cost Estimate" Value="{Binding RepairCostEstimate, Mode=TwoWay}" Minimum="0" SpinButtonPlacementMode="Compact" />
+                    </Grid>
+                    <TextBlock Text="{Binding PriceLookupNote}" Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+
+                    <Button Content="Calculate Offer" Style="{StaticResource AccentButtonStyle}" Command="{Binding CalculateOfferCommand}" HorizontalAlignment="Left" />
+
+                    <Grid ColumnSpacing="16" RowSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource MutedTextStyle}">
+                            <Run Text="Deductions: " /><Run Text="{Binding Deductions}" />
+                        </TextBlock>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource MutedTextStyle}">
+                            <Run Text="Accessory Bonus: " /><Run Text="{Binding AccessoryBonus}" />
+                        </TextBlock>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Style="{StaticResource MutedTextStyle}">
+                            <Run Text="Estimated Resale: " /><Run Text="{Binding EstimatedResaleValue}" />
+                        </TextBlock>
+                        <NumberBox Grid.Row="1" Grid.Column="0" Header="Offer Price (editable)" Value="{Binding OfferPrice, Mode=TwoWay}" Minimum="0" SpinButtonPlacementMode="Compact" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource SectionHeaderStyle}" VerticalAlignment="Bottom">
+                            <Run Text="Est. Profit: " /><Run Text="{Binding EstimatedProfit}" />
+                        </TextBlock>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="12">
+                    <ComboBox Header="Status" ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding StatusText, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                    <TextBox Header="Notes (optional)" Text="{Binding Notes, Mode=TwoWay}" AcceptsReturn="True" Height="60" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Button Content="Save Trade-In" Style="{StaticResource AccentButtonStyle}" Command="{Binding SaveCommand}" HorizontalAlignment="Left" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

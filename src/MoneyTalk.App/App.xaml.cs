@@ -89,6 +89,8 @@ public partial class App : Application
         services.AddSingleton<InvoiceService>();
         services.AddSingleton<RepairTicketService>();
         services.AddSingleton<PosService>();
+        services.AddSingleton<TradeInPriceLookupService>(sp => new TradeInPriceLookupService(
+            sp.GetRequiredService<IHttpClientFactory>().CreateClient(), sp.GetRequiredService<IGeminiClient>()));
         services.AddSingleton<BillService>();
         services.AddSingleton<ReconciliationService>();
         services.AddSingleton<ReportingService>();
@@ -137,6 +139,8 @@ public partial class App : Application
         services.AddTransient<PosViewModel>();
         services.AddTransient<CalendarViewModel>();
         services.AddTransient<VendorRepairsViewModel>();
+        services.AddTransient<TradeInsViewModel>();
+        services.AddTransient<TradeInEditViewModel>();
         services.AddTransient<VendorsViewModel>();
         services.AddTransient<BillsViewModel>();
         services.AddTransient<BillEditViewModel>();

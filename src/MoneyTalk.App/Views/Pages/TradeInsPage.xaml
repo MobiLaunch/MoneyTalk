@@ -1,0 +1,44 @@
+<Page
+    x:Class="MoneyTalk.App.Views.Pages.TradeInsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dg="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controls="using:MoneyTalk.App.Controls">
+
+    <Grid Padding="24" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Trade-Ins" Style="{StaticResource PageTitleStyle}" Margin="0" />
+            <Button Grid.Column="1" Content="New Trade-In" Style="{StaticResource AccentButtonStyle}" Command="{Binding NewTradeInCommand}" VerticalAlignment="Center" />
+        </Grid>
+
+        <controls:BusyErrorBar Grid.Row="1" IsBusy="{Binding IsBusy}" ErrorMessage="{Binding ErrorMessage}" />
+
+        <Grid Grid.Row="2">
+            <dg:DataGrid ItemsSource="{Binding TradeIns}" AutoGenerateColumns="False"
+                         IsReadOnly="True" SelectedItem="{Binding SelectedTradeIn, Mode=TwoWay}"
+                         GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                         DoubleTapped="Grid_DoubleTapped">
+                <dg:DataGrid.Columns>
+                    <dg:DataGridTextColumn Header="Brand" Binding="{Binding Brand}" Width="120" />
+                    <dg:DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="200" />
+                    <dg:DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="180" />
+                    <dg:DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" />
+                    <dg:DataGridTextColumn Header="Offer" Binding="{Binding OfferPrice}" Width="120" />
+                </dg:DataGrid.Columns>
+            </dg:DataGrid>
+            <TextBlock Text="No trade-ins yet. Click &quot;New Trade-In&quot; to start one." Style="{StaticResource MutedTextStyle}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Visibility="{Binding TradeIns.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=Invert}" />
+        </Grid>
+    </Grid>
+</Page>

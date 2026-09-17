@@ -24,6 +24,7 @@
             <NavigationViewItem Content="Point of Sale" Tag="Pos" Icon="Shop" />
             <NavigationViewItem Content="Calendar" Tag="Calendar" Icon="Calendar" />
             <NavigationViewItem Content="Vendor Repairs" Tag="VendorRepairs" Icon="Send" />
+            <NavigationViewItem Content="Trade-Ins" Tag="TradeIns" Icon="Switch" />
 
             <NavigationViewItem Content="Vendors" Tag="Vendors" Icon="People" />
             <NavigationViewItem Content="Bills" Tag="Bills" Icon="Document" />
