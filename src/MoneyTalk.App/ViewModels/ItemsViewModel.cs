@@ -68,4 +68,34 @@ public partial class ItemsViewModel : ViewModelBase
         });
         return success;
     }
+
+    public async Task<bool> EditItemAsync(Guid itemId, string sku, string name, ItemType type, decimal salesPrice, decimal cost, Guid? incomeAccountId, bool isActive)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            ErrorMessage = "Item name is required.";
+            return false;
+        }
+
+        var success = false;
+        await RunBusyAsync(async () =>
+        {
+            using var uow = NewUnitOfWork();
+            var item = await uow.Items.GetByIdAsync(itemId)
+                ?? throw new InvalidOperationException("Item no longer exists.");
+            item.Sku = sku.Trim();
+            item.Name = name.Trim();
+            item.Type = type;
+            item.SalesPrice = salesPrice;
+            item.Cost = cost;
+            item.IncomeAccountId = incomeAccountId;
+            item.IsActive = isActive;
+            uow.Items.Update(item);
+            await uow.SaveChangesAsync();
+            success = true;
+        });
+
+        if (success) await LoadAsync();
+        return success;
+    }
 }

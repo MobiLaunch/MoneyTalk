@@ -1,0 +1,10 @@
+<UserControl
+    x:Class="MoneyTalk.App.Controls.BusyErrorBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Spacing="8">
+        <InfoBar x:Name="ErrorInfoBar" Severity="Error" IsClosable="True" />
+        <ProgressRing x:Name="BusyRing" HorizontalAlignment="Left" Width="24" Height="24" />
+    </StackPanel>
+</UserControl>

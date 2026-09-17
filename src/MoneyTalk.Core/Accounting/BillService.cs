@@ -132,4 +132,35 @@ public class BillService
         await uow.SaveChangesAsync(ct);
         return payment;
     }
+
+    /// <summary>Voids a posted bill that has no payments applied yet: reverses its journal entry
+    /// (equal-and-opposite, never deletes history) and rolls back the vendor's balance. Bills
+    /// with any payment already applied must have that payment reversed/unapplied first.</summary>
+    public async Task VoidBillAsync(IUnitOfWork uow, Guid billId, string? reason = null, CancellationToken ct = default)
+    {
+        var bill = await uow.Bills.GetByIdAsync(billId, ct)
+            ?? throw new InvalidOperationException($"Bill {billId} was not found.");
+        if (bill.Status == BillStatus.Void)
+            throw new InvalidOperationException("This bill is already void.");
+        if (bill.JournalEntryId == null)
+            throw new InvalidOperationException("This bill has not been posted.");
+        if (bill.AmountPaid > 0)
+            throw new InvalidOperationException("Cannot void a bill with payments applied. Unapply the payment first.");
+
+        await _ledger.VoidJournalEntryAsync(uow, bill.JournalEntryId.Value, reason ?? $"Void bill {bill.BillNumber}", ct: ct);
+
+        var vendor = await uow.Vendors.GetByIdAsync(bill.VendorId, ct);
+        if (vendor != null)
+        {
+            vendor.Balance -= bill.Balance;
+            uow.Vendors.Update(vendor);
+        }
+
+        bill.Status = BillStatus.Void;
+        bill.Balance = 0;
+        bill.ModifiedAtUtc = DateTime.UtcNow;
+        uow.Bills.Update(bill);
+
+        await uow.SaveChangesAsync(ct);
+    }
 }

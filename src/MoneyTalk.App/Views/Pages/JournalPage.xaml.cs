@@ -52,4 +52,23 @@ public sealed partial class JournalPage : Page
         if (sender is Button { Tag: NewJournalLineRow row })
             ViewModel.RemoveNewEntryLineCommand.Execute(row);
     }
+
+    private async void VoidEntry_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: JournalEntryRow row }) return;
+
+        var confirm = new ContentDialog
+        {
+            Title = $"Void journal entry #{row.EntryNumber}?",
+            Content = "This posts an equal-and-opposite reversing entry — the original stays in the ledger for audit history, but its effect on your books is undone.",
+            PrimaryButtonText = "Void Entry",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = this.XamlRoot
+        };
+        var result = await confirm.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+
+        await ViewModel.VoidEntryAsync(row.Id, $"Manual void of JE #{row.EntryNumber}");
+    }
 }

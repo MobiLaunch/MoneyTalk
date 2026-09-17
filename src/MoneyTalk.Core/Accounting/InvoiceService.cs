@@ -147,6 +147,38 @@ public class InvoiceService
         return payment;
     }
 
+    /// <summary>Voids a posted invoice that has no payments applied yet: reverses its journal
+    /// entry (equal-and-opposite, never deletes history) and rolls back the customer's balance.
+    /// Invoices with any payment already applied must have that payment reversed/unapplied
+    /// first — voiding out from under a recorded deposit would leave the cash side of the books
+    /// unexplained.</summary>
+    public async Task VoidInvoiceAsync(IUnitOfWork uow, Guid invoiceId, string? reason = null, CancellationToken ct = default)
+    {
+        var invoice = await uow.Invoices.GetByIdAsync(invoiceId, ct)
+            ?? throw new InvalidOperationException($"Invoice {invoiceId} was not found.");
+        if (invoice.Status is InvoiceStatus.Draft or InvoiceStatus.Void)
+            throw new InvalidOperationException("This invoice has not been posted, or is already void.");
+        if (invoice.AmountPaid > 0)
+            throw new InvalidOperationException("Cannot void an invoice with payments applied. Unapply the payment first.");
+
+        if (invoice.JournalEntryId.HasValue)
+            await _ledger.VoidJournalEntryAsync(uow, invoice.JournalEntryId.Value, reason ?? $"Void invoice {invoice.InvoiceNumber}", ct: ct);
+
+        var customer = await uow.Customers.GetByIdAsync(invoice.CustomerId, ct);
+        if (customer != null)
+        {
+            customer.Balance -= invoice.Balance;
+            uow.Customers.Update(customer);
+        }
+
+        invoice.Status = InvoiceStatus.Void;
+        invoice.Balance = 0;
+        invoice.ModifiedAtUtc = DateTime.UtcNow;
+        uow.Invoices.Update(invoice);
+
+        await uow.SaveChangesAsync(ct);
+    }
+
     /// <summary>Marks overdue invoices whose due date has passed. Intended to be called once at
     /// app startup / daily refresh, not on every read.</summary>
     public async Task RefreshOverdueStatusesAsync(IUnitOfWork uow, Guid companyId, DateTime asOfDate, CancellationToken ct = default)

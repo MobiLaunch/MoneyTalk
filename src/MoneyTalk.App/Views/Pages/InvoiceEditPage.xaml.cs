@@ -79,4 +79,21 @@ public sealed partial class InvoiceEditPage : Page
         await ViewModel.RecordPaymentAsync(
             (decimal)dialog.GetNumber("amount"), DateTime.UtcNow.Date, method, ViewModel.DepositAccounts[accountIndex].Id);
     }
+
+    private async void VoidInvoice_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var confirm = new ContentDialog
+        {
+            Title = "Void this invoice?",
+            Content = "This reverses the invoice's posting on the ledger and removes it from the customer's balance. The invoice record itself stays for your history — this can't be undone from here.",
+            PrimaryButtonText = "Void Invoice",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = this.XamlRoot
+        };
+        var result = await confirm.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+
+        await ViewModel.VoidInvoiceAsync();
+    }
 }

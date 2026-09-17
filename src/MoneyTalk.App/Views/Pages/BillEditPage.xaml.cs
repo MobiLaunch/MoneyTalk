@@ -79,4 +79,21 @@ public sealed partial class BillEditPage : Page
         await ViewModel.RecordPaymentAsync(
             (decimal)dialog.GetNumber("amount"), DateTime.UtcNow.Date, method, ViewModel.PaymentAccounts[accountIndex].Id);
     }
+
+    private async void VoidBill_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var confirm = new ContentDialog
+        {
+            Title = "Void this bill?",
+            Content = "This reverses the bill's posting on the ledger and removes it from the vendor's balance. The bill record itself stays for your history — this can't be undone from here.",
+            PrimaryButtonText = "Void Bill",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = this.XamlRoot
+        };
+        var result = await confirm.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+
+        await ViewModel.VoidBillAsync();
+    }
 }

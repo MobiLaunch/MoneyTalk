@@ -69,4 +69,33 @@ public partial class CustomersViewModel : ViewModelBase
         if (SelectedCustomer == null) return;
         _navigationService.NavigateTo(PageKeys.InvoiceEdit, new InvoiceEditNavigationArgs(null, SelectedCustomer.Id));
     }
+
+    public async Task<bool> EditCustomerAsync(Guid customerId, string name, string email, string phone, int paymentTermsDays, bool taxExempt, bool isActive)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            ErrorMessage = "Customer name is required.";
+            return false;
+        }
+
+        var success = false;
+        await RunBusyAsync(async () =>
+        {
+            using var uow = NewUnitOfWork();
+            var customer = await uow.Customers.GetByIdAsync(customerId)
+                ?? throw new InvalidOperationException("Customer no longer exists.");
+            customer.Name = name.Trim();
+            customer.Email = string.IsNullOrWhiteSpace(email) ? null : email.Trim();
+            customer.Phone = string.IsNullOrWhiteSpace(phone) ? null : phone.Trim();
+            customer.PaymentTermsDays = paymentTermsDays;
+            customer.TaxExempt = taxExempt;
+            customer.IsActive = isActive;
+            uow.Customers.Update(customer);
+            await uow.SaveChangesAsync();
+            success = true;
+        });
+
+        if (success) await LoadAsync();
+        return success;
+    }
 }

@@ -18,19 +18,24 @@
                  Title="No Gemini API key configured" Message="Add one on the Integrations page to start chatting with the advisor." />
         <InfoBar Grid.Row="1" IsOpen="{Binding ErrorMessage, Converter={StaticResource StringToBoolConverter}}" Severity="Error" Message="{Binding ErrorMessage}" />
 
-        <ScrollViewer Grid.Row="2" x:Name="MessagesScrollViewer">
-            <ItemsControl ItemsSource="{Binding Messages}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Background="{Binding Role, Converter={StaticResource MessageRoleToBrushConverter}}"
-                                CornerRadius="8" Padding="12,8" Margin="0,4" MaxWidth="640"
-                                HorizontalAlignment="{Binding Role, Converter={StaticResource MessageRoleToAlignmentConverter}}">
-                            <TextBlock Text="{Binding Content}" TextWrapping="Wrap" />
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+        <Grid Grid.Row="2">
+            <ScrollViewer x:Name="MessagesScrollViewer">
+                <ItemsControl ItemsSource="{Binding Messages}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{Binding Role, Converter={StaticResource MessageRoleToBrushConverter}}"
+                                    CornerRadius="8" Padding="12,8" Margin="0,4" MaxWidth="640"
+                                    HorizontalAlignment="{Binding Role, Converter={StaticResource MessageRoleToAlignmentConverter}}">
+                                <TextBlock Text="{Binding Content}" TextWrapping="Wrap" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            <TextBlock Text="Ask a question below to get started — try one of the suggestions." Style="{StaticResource MutedTextStyle}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Visibility="{Binding Messages.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=Invert}" />
+        </Grid>
 
         <ItemsControl Grid.Row="3" ItemsSource="{Binding SuggestedPrompts}" Margin="0,0,0,8">
             <ItemsControl.ItemsPanel>
@@ -49,10 +54,12 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBox Grid.Column="0" PlaceholderText="Ask about your cash flow, customers, expenses..."
-                     Text="{Binding UserInput, Mode=TwoWay}" KeyDown="InputBox_KeyDown" />
-            <Button Grid.Column="1" Content="Send" Style="{StaticResource AccentButtonStyle}" Command="{Binding SendCommand}" IsEnabled="{Binding IsSending, Converter={StaticResource InverseBoolConverter}}" />
+                     Text="{Binding UserInput, Mode=TwoWay}" KeyDown="InputBox_KeyDown" IsEnabled="{Binding IsSending, Converter={StaticResource InverseBoolConverter}}" />
+            <ProgressRing Grid.Column="1" IsActive="{Binding IsSending}" Width="20" Height="20" Margin="0,0,8,0" />
+            <Button Grid.Column="2" Content="Send" Style="{StaticResource AccentButtonStyle}" Command="{Binding SendCommand}" IsEnabled="{Binding IsSending, Converter={StaticResource InverseBoolConverter}}" />
         </Grid>
     </Grid>
 </Page>

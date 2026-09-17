@@ -32,6 +32,7 @@ public partial class InvoiceEditViewModel : ViewModelBase
 
     public bool IsDraft => Status == InvoiceStatus.Draft;
     public bool CanRecordPayment => !IsDraft && _currentBalance > 0;
+    public bool CanVoid => Status is InvoiceStatus.Sent or InvoiceStatus.Overdue;
 
     private decimal _currentBalance;
 
@@ -49,6 +50,7 @@ public partial class InvoiceEditViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(IsDraft));
         OnPropertyChanged(nameof(CanRecordPayment));
+        OnPropertyChanged(nameof(CanVoid));
     }
 
     public async Task LoadAsync(InvoiceEditNavigationArgs args)
@@ -84,6 +86,9 @@ public partial class InvoiceEditViewModel : ViewModelBase
                 _currentBalance = invoice.Balance;
                 SelectedCustomer = Customers.FirstOrDefault(c => c.Id == invoice.CustomerId);
                 AmountPaidDisplay = invoice.AmountPaid.ToString("C2");
+                SubtotalDisplay = invoice.Subtotal.ToString("C2");
+                TotalDisplay = invoice.Total.ToString("C2");
+                BalanceDisplay = invoice.Balance.ToString("C2");
 
                 Lines.Clear();
                 foreach (var line in invoice.Lines)
@@ -106,9 +111,12 @@ public partial class InvoiceEditViewModel : ViewModelBase
                 var existingCount = (await uow.Invoices.FindAsync(i => i.CompanyId == companyId)).Count;
                 InvoiceNumber = $"INV-{1001 + existingCount}";
                 SelectedCustomer = args.CustomerId.HasValue ? Customers.FirstOrDefault(c => c.Id == args.CustomerId) : null;
+                RecalculateTotals();
             }
 
-            RecalculateTotals();
+            OnPropertyChanged(nameof(IsDraft));
+            OnPropertyChanged(nameof(CanRecordPayment));
+            OnPropertyChanged(nameof(CanVoid));
         });
     }
 
@@ -233,6 +241,28 @@ public partial class InvoiceEditViewModel : ViewModelBase
                 Status = updated.Status;
                 _currentBalance = updated.Balance;
                 AmountPaidDisplay = updated.AmountPaid.ToString("C2");
+                BalanceDisplay = updated.Balance.ToString("C2");
+            }
+            success = true;
+        });
+        return success;
+    }
+
+    public async Task<bool> VoidInvoiceAsync()
+    {
+        if (!_invoiceId.HasValue) return false;
+
+        var success = false;
+        await RunBusyAsync(async () =>
+        {
+            using var uow = NewUnitOfWork();
+            await _invoiceService.VoidInvoiceAsync(uow, _invoiceId.Value);
+
+            var updated = await uow.Invoices.GetByIdAsync(_invoiceId.Value);
+            if (updated != null)
+            {
+                Status = updated.Status;
+                _currentBalance = updated.Balance;
                 BalanceDisplay = updated.Balance.ToString("C2");
             }
             success = true;

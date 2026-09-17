@@ -42,4 +42,28 @@ public sealed partial class CustomersPage : Page
             dialog.GetText("name"), dialog.GetText("email"), dialog.GetText("phone"),
             (int)dialog.GetNumber("terms"), dialog.GetBool("taxExempt"));
     }
+
+    private async void CustomersGrid_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+    {
+        var customer = ViewModel.SelectedCustomer;
+        if (customer == null) return;
+
+        var dialog = new SimpleFormDialog("Edit Customer", new FormFieldDescriptor[]
+        {
+            new TextFieldDescriptor { Key = "name", Label = "Customer name", InitialValue = customer.Name },
+            new TextFieldDescriptor { Key = "email", Label = "Email", InitialValue = customer.Email ?? string.Empty },
+            new TextFieldDescriptor { Key = "phone", Label = "Phone", InitialValue = customer.Phone ?? string.Empty },
+            new NumberFieldDescriptor { Key = "terms", Label = "Payment terms (days)", InitialValue = customer.PaymentTermsDays, Minimum = 0, Maximum = 365 },
+            new CheckboxFieldDescriptor { Key = "taxExempt", Label = "Tax exempt", InitialValue = customer.TaxExempt },
+            new CheckboxFieldDescriptor { Key = "isActive", Label = "Active", InitialValue = customer.IsActive }
+        })
+        { XamlRoot = this.XamlRoot };
+
+        var result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+
+        await ViewModel.EditCustomerAsync(
+            customer.Id, dialog.GetText("name"), dialog.GetText("email"), dialog.GetText("phone"),
+            (int)dialog.GetNumber("terms"), dialog.GetBool("taxExempt"), dialog.GetBool("isActive"));
+    }
 }

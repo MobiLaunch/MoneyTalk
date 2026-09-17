@@ -42,4 +42,30 @@ public sealed partial class ChartOfAccountsPage : Page
         var subType = Enum.Parse<AccountSubType>(dialog.GetComboValue("subtype"));
         await ViewModel.AddAccountAsync(dialog.GetText("code"), dialog.GetText("name"), type, subType);
     }
+
+    private async void AccountsGrid_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+    {
+        var account = ViewModel.SelectedAccount;
+        if (account == null) return;
+
+        var typeOptions = ChartOfAccountsViewModel.AccountTypeOptions;
+        var subTypeOptions = ChartOfAccountsViewModel.AccountSubTypeOptions;
+
+        var dialog = new SimpleFormDialog("Edit Account", new FormFieldDescriptor[]
+        {
+            new TextFieldDescriptor { Key = "code", Label = "Account code", InitialValue = account.Code },
+            new TextFieldDescriptor { Key = "name", Label = "Account name", InitialValue = account.Name },
+            new ComboFieldDescriptor { Key = "type", Label = "Account type", Options = typeOptions, InitialIndex = typeOptions.ToList().IndexOf(account.Type.ToString()) },
+            new ComboFieldDescriptor { Key = "subtype", Label = "Sub-type", Options = subTypeOptions, InitialIndex = subTypeOptions.ToList().IndexOf(account.SubType.ToString()) },
+            new CheckboxFieldDescriptor { Key = "isActive", Label = "Active", InitialValue = account.IsActive }
+        })
+        { XamlRoot = this.XamlRoot };
+
+        var result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+
+        var type = Enum.Parse<AccountType>(dialog.GetComboValue("type"));
+        var subType = Enum.Parse<AccountSubType>(dialog.GetComboValue("subtype"));
+        await ViewModel.EditAccountAsync(account.Id, dialog.GetText("code"), dialog.GetText("name"), type, subType, dialog.GetBool("isActive"));
+    }
 }

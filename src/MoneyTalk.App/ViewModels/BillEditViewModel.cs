@@ -31,6 +31,7 @@ public partial class BillEditViewModel : ViewModelBase
 
     public bool IsUnposted => _billId == null;
     public bool CanRecordPayment => _billId != null && _currentBalance > 0;
+    public bool CanVoid => Status == BillStatus.Open && _billId != null;
 
     private decimal _currentBalance;
 
@@ -107,6 +108,7 @@ public partial class BillEditViewModel : ViewModelBase
             RecalculateTotals();
             OnPropertyChanged(nameof(IsUnposted));
             OnPropertyChanged(nameof(CanRecordPayment));
+            OnPropertyChanged(nameof(CanVoid));
         });
     }
 
@@ -181,6 +183,7 @@ public partial class BillEditViewModel : ViewModelBase
             }
             OnPropertyChanged(nameof(IsUnposted));
             OnPropertyChanged(nameof(CanRecordPayment));
+            OnPropertyChanged(nameof(CanVoid));
         });
     }
 
@@ -214,6 +217,30 @@ public partial class BillEditViewModel : ViewModelBase
                 BalanceDisplay = updated.Balance.ToString("C2");
             }
             OnPropertyChanged(nameof(CanRecordPayment));
+            success = true;
+        });
+        return success;
+    }
+
+    public async Task<bool> VoidBillAsync()
+    {
+        if (!_billId.HasValue) return false;
+
+        var success = false;
+        await RunBusyAsync(async () =>
+        {
+            using var uow = NewUnitOfWork();
+            await _billService.VoidBillAsync(uow, _billId.Value);
+
+            var updated = await uow.Bills.GetByIdAsync(_billId.Value);
+            if (updated != null)
+            {
+                Status = updated.Status;
+                _currentBalance = updated.Balance;
+                BalanceDisplay = updated.Balance.ToString("C2");
+            }
+            OnPropertyChanged(nameof(CanRecordPayment));
+            OnPropertyChanged(nameof(CanVoid));
             success = true;
         });
         return success;

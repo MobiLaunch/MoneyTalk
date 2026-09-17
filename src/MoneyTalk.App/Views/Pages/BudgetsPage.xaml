@@ -2,10 +2,12 @@
     x:Class="MoneyTalk.App.Views.Pages.BudgetsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:dg="using:CommunityToolkit.WinUI.UI.Controls">
+    xmlns:dg="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controls="using:MoneyTalk.App.Controls">
 
     <Grid Padding="24" RowSpacing="12">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -21,21 +23,31 @@
             <Button Grid.Column="1" Content="New Budget" Style="{StaticResource AccentButtonStyle}" Click="NewBudget_Click" VerticalAlignment="Center" />
         </Grid>
 
-        <ComboBox Grid.Row="1" Header="Budget" ItemsSource="{Binding Budgets}" SelectedItem="{Binding SelectedBudget, Mode=TwoWay}"
+        <controls:BusyErrorBar Grid.Row="1" IsBusy="{Binding IsBusy}" ErrorMessage="{Binding ErrorMessage}" />
+
+        <ComboBox Grid.Row="2" Header="Budget" ItemsSource="{Binding Budgets}" SelectedItem="{Binding SelectedBudget, Mode=TwoWay}"
                   DisplayMemberPath="Name" MinWidth="280" HorizontalAlignment="Left" />
+        <TextBlock Grid.Row="2" Text="No budgets yet — click &quot;New Budget&quot; to create one." Style="{StaticResource MutedTextStyle}"
+                   VerticalAlignment="Bottom" Margin="0,0,0,4"
+                   Visibility="{Binding Budgets.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=Invert}" />
 
-        <Button Grid.Row="2" Content="Add Budget Line" Click="AddBudgetLine_Click" HorizontalAlignment="Left" />
+        <Button Grid.Row="3" Content="Add Budget Line" Click="AddBudgetLine_Click" HorizontalAlignment="Left" />
 
-        <dg:DataGrid Grid.Row="3" ItemsSource="{Binding BudgetLines}" AutoGenerateColumns="False"
-                     IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column">
-            <dg:DataGrid.Columns>
-                <dg:DataGridTextColumn Header="Account" Binding="{Binding AccountName}" Width="220" />
-                <dg:DataGridTextColumn Header="Month" Binding="{Binding Month}" Width="80" />
-                <dg:DataGridTextColumn Header="Budget" Binding="{Binding BudgetAmount}" Width="120" />
-                <dg:DataGridTextColumn Header="Actual" Binding="{Binding ActualAmount}" Width="120" />
-                <dg:DataGridTextColumn Header="Variance" Binding="{Binding Variance}" Width="120" />
-                <dg:DataGridTextColumn Header="Variance %" Binding="{Binding VariancePercent}" Width="100" />
-            </dg:DataGrid.Columns>
-        </dg:DataGrid>
+        <Grid Grid.Row="4">
+            <dg:DataGrid ItemsSource="{Binding BudgetLines}" AutoGenerateColumns="False"
+                         IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                <dg:DataGrid.Columns>
+                    <dg:DataGridTextColumn Header="Account" Binding="{Binding AccountName}" Width="220" />
+                    <dg:DataGridTextColumn Header="Month" Binding="{Binding Month}" Width="80" />
+                    <dg:DataGridTextColumn Header="Budget" Binding="{Binding BudgetAmount}" Width="120" />
+                    <dg:DataGridTextColumn Header="Actual" Binding="{Binding ActualAmount}" Width="120" />
+                    <dg:DataGridTextColumn Header="Variance" Binding="{Binding Variance}" Width="120" />
+                    <dg:DataGridTextColumn Header="Variance %" Binding="{Binding VariancePercent}" Width="100" />
+                </dg:DataGrid.Columns>
+            </dg:DataGrid>
+            <TextBlock Text="No budget lines yet. Select a budget above and click &quot;Add Budget Line&quot;." Style="{StaticResource MutedTextStyle}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Visibility="{Binding BudgetLines.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=Invert}" />
+        </Grid>
     </Grid>
 </Page>

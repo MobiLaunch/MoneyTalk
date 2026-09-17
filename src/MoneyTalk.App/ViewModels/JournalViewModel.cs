@@ -10,12 +10,14 @@ namespace MoneyTalk.App.ViewModels;
 
 public class JournalEntryRow
 {
+    public Guid Id { get; init; }
     public int EntryNumber { get; init; }
     public DateTime Date { get; init; }
     public string Memo { get; init; } = string.Empty;
     public JournalSourceType SourceType { get; init; }
     public JournalEntryStatus Status { get; init; }
     public decimal Total { get; init; }
+    public bool CanVoid => Status == JournalEntryStatus.Posted;
 }
 
 public partial class NewJournalLineRow : ObservableObject
@@ -60,6 +62,7 @@ public partial class JournalViewModel : ViewModelBase
             {
                 Entries.Add(new JournalEntryRow
                 {
+                    Id = entry.Id,
                     EntryNumber = entry.EntryNumber,
                     Date = entry.Date,
                     Memo = entry.Memo ?? string.Empty,
@@ -115,6 +118,18 @@ public partial class JournalViewModel : ViewModelBase
 
             NewEntryLines.Clear();
             NewEntryMemo = null;
+        });
+
+        await LoadAsync();
+    }
+
+    public async Task VoidEntryAsync(Guid journalEntryId, string? reason)
+    {
+        await RunBusyAsync(async () =>
+        {
+            using var uow = NewUnitOfWork();
+            await _ledgerService.VoidJournalEntryAsync(uow, journalEntryId, reason);
+            await uow.SaveChangesAsync();
         });
 
         await LoadAsync();

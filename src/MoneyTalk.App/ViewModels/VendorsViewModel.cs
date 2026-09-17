@@ -69,4 +69,33 @@ public partial class VendorsViewModel : ViewModelBase
         if (SelectedVendor == null) return;
         _navigationService.NavigateTo(PageKeys.BillEdit, new BillEditNavigationArgs(null, SelectedVendor.Id));
     }
+
+    public async Task<bool> EditVendorAsync(Guid vendorId, string name, string email, string phone, int paymentTermsDays, bool is1099, bool isActive)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            ErrorMessage = "Vendor name is required.";
+            return false;
+        }
+
+        var success = false;
+        await RunBusyAsync(async () =>
+        {
+            using var uow = NewUnitOfWork();
+            var vendor = await uow.Vendors.GetByIdAsync(vendorId)
+                ?? throw new InvalidOperationException("Vendor no longer exists.");
+            vendor.Name = name.Trim();
+            vendor.Email = string.IsNullOrWhiteSpace(email) ? null : email.Trim();
+            vendor.Phone = string.IsNullOrWhiteSpace(phone) ? null : phone.Trim();
+            vendor.PaymentTermsDays = paymentTermsDays;
+            vendor.Is1099Vendor = is1099;
+            vendor.IsActive = isActive;
+            uow.Vendors.Update(vendor);
+            await uow.SaveChangesAsync();
+            success = true;
+        });
+
+        if (success) await LoadAsync();
+        return success;
+    }
 }

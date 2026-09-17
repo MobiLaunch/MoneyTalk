@@ -63,21 +63,31 @@ public partial class ChartOfAccountsViewModel : ViewModelBase
         return success;
     }
 
-    [RelayCommand]
-    private async Task ToggleActiveAsync(Account? account)
+    public async Task<bool> EditAccountAsync(Guid accountId, string code, string name, AccountType type, AccountSubType subType, bool isActive)
     {
-        account ??= SelectedAccount;
-        if (account == null) return;
+        if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(name))
+        {
+            ErrorMessage = "Both an account code and a name are required.";
+            return false;
+        }
 
+        var success = false;
         await RunBusyAsync(async () =>
         {
             using var uow = NewUnitOfWork();
-            var tracked = await uow.Accounts.GetByIdAsync(account.Id)
+            var account = await uow.Accounts.GetByIdAsync(accountId)
                 ?? throw new InvalidOperationException("Account no longer exists.");
-            tracked.IsActive = !tracked.IsActive;
-            uow.Accounts.Update(tracked);
+            account.Code = code.Trim();
+            account.Name = name.Trim();
+            account.Type = type;
+            account.SubType = subType;
+            account.IsActive = isActive;
+            uow.Accounts.Update(account);
             await uow.SaveChangesAsync();
-            account.IsActive = tracked.IsActive;
+            success = true;
         });
+
+        if (success) await LoadAsync();
+        return success;
     }
 }
