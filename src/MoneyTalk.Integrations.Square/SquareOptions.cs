@@ -11,5 +11,5 @@ public class SquareOptions
     public string ClientId { get; set; } = string.Empty;
     public string ClientSecret { get; set; } = string.Empty;
     public string RedirectUri { get; set; } = string.Empty;
-    public string ApiVersion { get; set; } = "2024-08-21";
+    public string ApiVersion { get; set; } = "2025-01-23";
 }
