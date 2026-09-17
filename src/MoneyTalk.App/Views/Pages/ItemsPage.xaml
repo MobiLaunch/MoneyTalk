@@ -47,6 +47,13 @@
                             </DataTemplate>
                         </dg:DataGridTemplateColumn.CellTemplate>
                     </dg:DataGridTemplateColumn>
+                    <dg:DataGridTemplateColumn Header="" Width="110">
+                        <dg:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Print Label" Click="PrintLabel_Click" Tag="{Binding}" />
+                            </DataTemplate>
+                        </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
                 </dg:DataGrid.Columns>
             </dg:DataGrid>
             <TextBlock Text="No items yet. Click &quot;Add Item&quot; to create one." Style="{StaticResource MutedTextStyle}"

@@ -96,4 +96,9 @@ public sealed partial class ItemsPage : Page
             (decimal)dialog.GetNumber("price"), (decimal)dialog.GetNumber("cost"), incomeAccountId, dialog.GetBool("isActive"),
             (decimal)dialog.GetNumber("quantityOnHand"), (decimal)dialog.GetNumber("reorderPoint"));
     }
+
+    private void PrintLabel_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: Item item }) ViewModel.PrintLabel(item);
+    }
 }

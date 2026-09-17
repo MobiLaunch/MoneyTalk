@@ -109,4 +109,27 @@ public partial class ItemsViewModel : ViewModelBase
         if (success) await LoadAsync();
         return success;
     }
+
+    /// <summary>Encodes the item's SKU as a CODE128 barcode and sends a small label (name, SKU,
+    /// price, barcode) straight to the configured printer — see <see cref="PrintService"/> for
+    /// why this goes through classic GDI+ printing rather than the WinRT printing stack.</summary>
+    public void PrintLabel(Item item)
+    {
+        if (string.IsNullOrWhiteSpace(item.Sku))
+        {
+            ErrorMessage = "This item has no SKU to encode as a barcode.";
+            return;
+        }
+
+        try
+        {
+            var barcode = BarcodeService.Encode(item.Sku, LabelBarcodeFormat.Code128, 260, 80);
+            var printerName = SettingsService.Load().ReceiptPrinterName;
+            PrintService.PrintLabel(printerName, item.Name, $"{item.Sku} · {item.SalesPrice:C2}", barcode);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Couldn't print label: {ex.Message}";
+        }
+    }
 }

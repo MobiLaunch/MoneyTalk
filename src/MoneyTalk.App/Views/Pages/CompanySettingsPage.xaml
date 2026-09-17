@@ -43,8 +43,26 @@
                 <NumberBox Grid.Column="1" Header="Low cash warning threshold" Value="{Binding LowCashWarningThreshold, Mode=TwoWay}" Minimum="0" SpinButtonPlacementMode="Inline" />
             </Grid>
 
+            <ComboBox Header="Receipt/label printer" ItemsSource="{Binding ReceiptPrinterOptions}"
+                      SelectedItem="{Binding SelectedReceiptPrinter, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+
             <Button Content="Save" Style="{StaticResource AccentButtonStyle}" Command="{Binding SaveCommand}" HorizontalAlignment="Left" />
-            <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource MutedTextStyle}" />
+            <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Idle Screen Lock" Style="{StaticResource SectionHeaderStyle}" />
+                    <TextBlock Text="Locks the app after 3 minutes of no mouse/keyboard activity — useful on a shared shop-floor terminal." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+                    <TextBlock Text="✓ PIN is set." Foreground="{StaticResource MoneyTalkPositiveBrush}" Visibility="{Binding HasScreenLockPin, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock Text="Set a PIN below before turning on screen lock." Style="{StaticResource MutedTextStyle}" Visibility="{Binding HasScreenLockPin, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}" />
+                    <ToggleSwitch Header="Enable idle screen lock" IsOn="{Binding ScreenLockEnabled, Mode=TwoWay}" />
+
+                    <PasswordBox Header="New PIN (4-6 digits)" Password="{Binding NewPinInput, Mode=TwoWay}" MaxLength="6" />
+                    <PasswordBox Header="Confirm PIN" Password="{Binding ConfirmPinInput, Mode=TwoWay}" MaxLength="6" />
+                    <Button Content="Set PIN" Command="{Binding SetPinCommand}" HorizontalAlignment="Left" />
+                    <TextBlock Text="{Binding PinStatusMessage}" Style="{StaticResource MutedTextStyle}" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

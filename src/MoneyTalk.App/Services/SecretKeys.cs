@@ -14,4 +14,8 @@ public static class SecretKeys
     public static string QuickBooksAccessToken(Guid companyId) => $"qbo:{companyId}:accessToken";
     public static string QuickBooksRefreshToken(Guid companyId) => $"qbo:{companyId}:refreshToken";
     public static string QuickBooksClientSecret => "qbo:clientSecret";
+
+    /// <summary>PIN for the app-wide idle screen lock — a machine-level control, not tied to any
+    /// one company, so (unlike the Square/QuickBooks keys above) it isn't namespaced by company id.</summary>
+    public static string ScreenLockPin => "screenlock:pin";
 }

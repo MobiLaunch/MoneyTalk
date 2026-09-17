@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+  <Grid x:Name="RootGrid">
     <NavigationView
         x:Name="RootNavigationView"
         IsBackButtonVisible="Auto"
@@ -49,4 +50,14 @@
 
         <Frame x:Name="ContentFrame" />
     </NavigationView>
+
+    <Grid x:Name="LockOverlay" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Visibility="Collapsed">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" Width="280">
+            <TextBlock Text="MoneyTalk is locked" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" />
+            <PasswordBox x:Name="LockPinBox" PlaceholderText="Enter PIN" MaxLength="6" KeyDown="LockPinBox_KeyDown" />
+            <Button Content="Unlock" HorizontalAlignment="Stretch" Click="UnlockButton_Click" />
+            <TextBlock x:Name="LockErrorText" Text="Incorrect PIN." Foreground="{StaticResource MoneyTalkNegativeBrush}" HorizontalAlignment="Center" Visibility="Collapsed" />
+        </StackPanel>
+    </Grid>
+  </Grid>
 </Window>

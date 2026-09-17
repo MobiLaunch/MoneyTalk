@@ -31,6 +31,15 @@ public class AppSettings
     public string GeminiModelId { get; set; } = "gemini-2.0-flash";
 
     public bool HasCompletedOnboarding { get; set; }
+
+    /// <summary>Windows printer name to send receipts/labels to (see <see cref="Services.PrintService"/>).
+    /// Empty means "use the system default printer".</summary>
+    public string ReceiptPrinterName { get; set; } = string.Empty;
+
+    /// <summary>App-wide idle screen lock (3-minute idle timeout, matching NovaOps's hardcoded
+    /// lock delay) — see <c>MainWindow</c>. Off by default so a fresh install isn't locked out
+    /// before a PIN has ever been set.</summary>
+    public bool ScreenLockEnabled { get; set; }
 }
 
 public class LocalSettingsService

@@ -48,6 +48,11 @@ public partial class PosViewModel : ViewModelBase
     private string? _pendingDeviceCodeId;
     private string? _pendingCheckoutId;
 
+    [ObservableProperty] private bool hasLastReceipt;
+    private List<(string Description, decimal Quantity, decimal UnitPrice, decimal Amount)> _lastReceiptLines = new();
+    private decimal _lastReceiptTotal;
+    private string _lastReceiptCustomerName = "Walk-in";
+
     public decimal CartTotal => Cart.Sum(l => l.Amount);
     public bool HasPairedTerminal => !string.IsNullOrEmpty(SettingsService.Load().SquareTerminalDeviceId);
 
@@ -132,6 +137,12 @@ public partial class PosViewModel : ViewModelBase
             using var uow = NewUnitOfWork();
             var lines = Cart.Select(c => new PosCartLine(c.ItemId, c.Description, c.Quantity, c.UnitPrice, c.IncomeAccountId)).ToList();
             await _posService.CompleteCartSaleAsync(uow, ActiveCompanyId, SelectedCustomer?.Id, lines, method, SelectedDepositAccount.Id);
+
+            _lastReceiptLines = Cart.Select(c => (c.Description, c.Quantity, c.UnitPrice, c.Amount)).ToList();
+            _lastReceiptTotal = CartTotal;
+            _lastReceiptCustomerName = SelectedCustomer?.Name ?? "Walk-in";
+            HasLastReceipt = true;
+
             Cart.Clear();
             success = true;
         });
@@ -143,6 +154,46 @@ public partial class PosViewModel : ViewModelBase
 
     [RelayCommand]
     private Task CheckoutOtherAsync() => CompleteCartSaleAsync(PaymentMethod.Other);
+
+    /// <summary>Reprints the last completed sale — receipts print on demand rather than
+    /// automatically so a shop without a receipt printer configured never sees a failed-print
+    /// error interrupt an otherwise-successful sale.</summary>
+    [RelayCommand]
+    private void PrintReceipt()
+    {
+        if (!HasLastReceipt) return;
+
+        var lines = new List<string>();
+        lines.Add($"Customer: {_lastReceiptCustomerName}");
+        lines.Add(new string('-', 32));
+        foreach (var line in _lastReceiptLines)
+            lines.Add($"{line.Quantity:0.##} x {line.Description}  {line.Amount:C2}");
+        lines.Add(new string('-', 32));
+        lines.Add($"Total: {_lastReceiptTotal:C2}");
+
+        try
+        {
+            PrintService.PrintReceipt(SettingsService.Load().ReceiptPrinterName, "MoneyTalk Receipt", lines);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Couldn't print receipt: {ex.Message}";
+        }
+    }
+
+    /// <summary>Looks up a scanned barcode/SKU against the loaded catalog and adds it to the cart
+    /// — see <c>PosPage.xaml.cs</c> for the keyboard-emulation scanner input that calls this
+    /// (USB barcode scanners act as a fast, Enter-terminated keyboard, not a separate device API).</summary>
+    public void AddToCartByScannedCode(string code)
+    {
+        var item = CatalogItems.FirstOrDefault(i => string.Equals(i.Sku, code, StringComparison.OrdinalIgnoreCase));
+        if (item == null)
+        {
+            ErrorMessage = $"No item found for scanned code \"{code}\".";
+            return;
+        }
+        AddToCart(item);
+    }
 
     private async Task<(string AccessToken, string LocationId)?> GetSquareContextAsync()
     {
