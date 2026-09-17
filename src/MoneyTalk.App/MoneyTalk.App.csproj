@@ -10,7 +10,14 @@
     <UseWinUI>true</UseWinUI>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <EnableMsixTooling>false</EnableMsixTooling>
+
+    <!-- Must be true even though we don't ship MSIX: with `dotnet build` (as opposed to full
+         Visual Studio), the Windows App SDK's PRI-resource-generation task only resolves
+         correctly when this is enabled. Leaving it false throws MSB4062
+         ("Microsoft.Build.Packaging.Pri.Tasks.ExpandPriContent task could not be loaded") — a
+         documented WindowsAppSDK CLI-build quirk, not something that forces MSIX packaging.
+         Actual packaging output is controlled by WindowsPackageType below, not this. -->
+    <EnableMsixTooling>true</EnableMsixTooling>
 
     <!-- MoneyTalk ships unpackaged (no MSIX) so it can be built and run without provisioning
          signing certificates or app-store style packaging identity — just build and run the

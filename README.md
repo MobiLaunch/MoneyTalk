@@ -103,13 +103,23 @@ Linux/macOS CI if you want a build check that doesn't require a Windows agent.
 
 > **Note on this repository's origin:** this solution was authored in a Linux sandbox without
 > access to the .NET SDK or Windows App SDK tooling, so the WinUI 3 project (`MoneyTalk.App`)
-> has not been compiled here — only carefully hand-verified. `MoneyTalk.Core`, `MoneyTalk.Data`,
+> has not been compiled here — only carefully hand-verified, then patched against real compiler
+> output from a Windows build once one became available. `MoneyTalk.Core`, `MoneyTalk.Data`,
 > and the integration projects target plain `net8.0` and should build/test cleanly on any
-> platform. The first thing to do after cloning onto a Windows machine is `dotnet build
-> MoneyTalk.sln` and fix up anything the compiler flags — most likely candidates are the exact
-> `CommunityToolkit.WinUI.Controls.DataGrid` package/namespace version (it has moved names a
-> few times across CommunityToolkit releases) and `NumberBox.Value` (a `double`) bound directly
-> to `decimal` view-model properties.
+> platform. If you hit anything else, `NumberBox.Value` (a `double`) bound directly to `decimal`
+> view-model properties is the most likely remaining rough edge.
+
+#### If `dotnet build` fails with MSB4062 ("ExpandPriContent task could not be loaded")
+
+This is a known Windows App SDK quirk specific to building via the `dotnet` CLI rather than
+full Visual Studio (tracked in [microsoft/WindowsAppSDK#3939](https://github.com/microsoft/WindowsAppSDK/issues/3939)):
+the PRI (resource index) generation tooling only resolves correctly when
+`<EnableMsixTooling>true</EnableMsixTooling>` is set in `MoneyTalk.App.csproj` — already the
+case in this repo. This does **not** force MSIX packaging; that's controlled separately by
+`<WindowsPackageType>None</WindowsPackageType>`, which stays `None`. If you still hit this
+error, confirm you have the .NET 8 SDK and the Windows App SDK C# workload/component installed
+(via the Visual Studio Installer, even if you build from the CLI) rather than a bare `dotnet-sdk`
+install.
 
 ### Database schema changes
 The app calls `Database.EnsureCreated()` on first run rather than shipping EF Core migrations
