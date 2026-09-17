@@ -87,6 +87,7 @@ public partial class App : Application
         // IUnitOfWork it should operate against as a parameter.
         services.AddSingleton<LedgerService>();
         services.AddSingleton<InvoiceService>();
+        services.AddSingleton<RepairTicketService>();
         services.AddSingleton<BillService>();
         services.AddSingleton<ReconciliationService>();
         services.AddSingleton<ReportingService>();
@@ -130,6 +131,8 @@ public partial class App : Application
         services.AddTransient<CustomersViewModel>();
         services.AddTransient<InvoicesViewModel>();
         services.AddTransient<InvoiceEditViewModel>();
+        services.AddTransient<TicketsViewModel>();
+        services.AddTransient<TicketEditViewModel>();
         services.AddTransient<VendorsViewModel>();
         services.AddTransient<BillsViewModel>();
         services.AddTransient<BillEditViewModel>();

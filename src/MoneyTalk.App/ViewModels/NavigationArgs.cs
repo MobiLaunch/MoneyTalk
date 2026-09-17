@@ -7,3 +7,6 @@ public record InvoiceEditNavigationArgs(Guid? InvoiceId, Guid? CustomerId = null
 
 /// <summary>Navigation parameter for BillEditPage — same idea as <see cref="InvoiceEditNavigationArgs"/>.</summary>
 public record BillEditNavigationArgs(Guid? BillId, Guid? VendorId = null);
+
+/// <summary>Navigation parameter for TicketEditPage — same idea as <see cref="InvoiceEditNavigationArgs"/>.</summary>
+public record TicketEditNavigationArgs(Guid? TicketId, Guid? CustomerId = null);

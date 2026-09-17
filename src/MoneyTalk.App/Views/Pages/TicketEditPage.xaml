@@ -1,0 +1,190 @@
+<Page
+    x:Class="MoneyTalk.App.Views.Pages.TicketEditPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dg="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controls="using:MoneyTalk.App.Controls">
+
+    <Grid Padding="24" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Text="Repair Ticket" Style="{StaticResource PageTitleStyle}" Margin="0" />
+                <TextBlock Text="{Binding TicketNumber}" Style="{StaticResource SectionHeaderStyle}" VerticalAlignment="Center" />
+            </StackPanel>
+            <Button Grid.Column="1" Content="Back" Command="{Binding GoBackCommand}" />
+        </Grid>
+
+        <controls:BusyErrorBar Grid.Row="1" IsBusy="{Binding IsBusy}" ErrorMessage="{Binding ErrorMessage}" />
+
+        <Pivot Grid.Row="2">
+            <PivotItem Header="Info &amp; Device">
+                <ScrollViewer Padding="0,16,0,0">
+                    <StackPanel Spacing="16" MaxWidth="900">
+                        <Border Style="{StaticResource CardBorderStyle}">
+                            <Grid ColumnSpacing="16" RowSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <ComboBox Grid.Row="0" Grid.Column="0" Header="Customer" ItemsSource="{Binding Customers}"
+                                          SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}" DisplayMemberPath="Name"
+                                          PlaceholderText="Walk-in (no customer)" HorizontalAlignment="Stretch" />
+                                <ComboBox Grid.Row="0" Grid.Column="1" Header="Status" ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding Status, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                                <ComboBox Grid.Row="0" Grid.Column="2" Header="Priority" ItemsSource="{Binding PriorityOptions}"
+                                          SelectedItem="{Binding PriorityText, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+
+                                <TextBox Grid.Row="1" Grid.Column="0" Header="Device" Text="{Binding Device, Mode=TwoWay}" PlaceholderText="iPhone, Samsung Galaxy, ..." />
+                                <TextBox Grid.Row="1" Grid.Column="1" Header="Model" Text="{Binding DeviceModel, Mode=TwoWay}" PlaceholderText="13 Pro, S23 Ultra, ..." />
+                                <TextBox Grid.Row="1" Grid.Column="2" Header="Serial Number" Text="{Binding SerialNumber, Mode=TwoWay}" />
+
+                                <TextBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Header="Issue" Text="{Binding Issue, Mode=TwoWay}" AcceptsReturn="True" Height="60" TextWrapping="Wrap" />
+
+                                <NumberBox Grid.Row="3" Grid.Column="0" Header="Warranty (days)" Value="{Binding WarrantyDays, Mode=TwoWay}" Minimum="0" SpinButtonPlacementMode="Compact" />
+                                <DatePicker Grid.Row="3" Grid.Column="1" Header="Warranty start" Date="{Binding WarrantyStartDate, Mode=TwoWay}" />
+                                <NumberBox Grid.Row="3" Grid.Column="2" Header="Price" Value="{Binding Price, Mode=TwoWay}" Minimum="0" SpinButtonPlacementMode="Compact" />
+                            </Grid>
+                        </Border>
+
+                        <TextBox Header="Device description / condition notes" Text="{Binding DeviceDescription, Mode=TwoWay}" AcceptsReturn="True" Height="60" TextWrapping="Wrap" />
+
+                        <Button Content="Save Ticket" Style="{StaticResource AccentButtonStyle}" Command="{Binding SaveCommand}" HorizontalAlignment="Left" />
+                    </StackPanel>
+                </ScrollViewer>
+            </PivotItem>
+
+            <PivotItem Header="Parts &amp; Services">
+                <StackPanel Spacing="12" Padding="0,16,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Parts &amp; Services Used" Style="{StaticResource SectionHeaderStyle}" />
+                        <Button Grid.Column="1" Content="Add Line" Click="AddLine_Click" />
+                    </Grid>
+                    <dg:DataGrid ItemsSource="{Binding Lines}" AutoGenerateColumns="False" HeadersVisibility="Column"
+                                 GridLinesVisibility="Horizontal" MinHeight="120" MaxHeight="320" CanUserSortColumns="False">
+                        <dg:DataGrid.Columns>
+                            <dg:DataGridTextColumn Header="Description" Binding="{Binding Description, Mode=TwoWay}" Width="3*" />
+                            <dg:DataGridTextColumn Header="Qty" Binding="{Binding Quantity, Mode=TwoWay}" Width="*" />
+                            <dg:DataGridTextColumn Header="Unit Price" Binding="{Binding UnitPrice, Mode=TwoWay}" Width="*" />
+                            <dg:DataGridTextColumn Header="Amount" Binding="{Binding Amount}" IsReadOnly="True" Width="*" />
+                            <dg:DataGridTemplateColumn Header="" Width="60">
+                                <dg:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="✕" Click="RemoveLine_Click" Tag="{Binding}" />
+                                    </DataTemplate>
+                                </dg:DataGridTemplateColumn.CellTemplate>
+                            </dg:DataGridTemplateColumn>
+                        </dg:DataGrid.Columns>
+                    </dg:DataGrid>
+                    <TextBlock Text="Save the ticket after adding or removing lines." Style="{StaticResource MutedTextStyle}" />
+                </StackPanel>
+            </PivotItem>
+
+            <PivotItem Header="Payments">
+                <StackPanel Spacing="12" Padding="0,16,0,0">
+                    <TextBlock Style="{StaticResource SectionHeaderStyle}">
+                        <Run Text="Balance Due: " /><Run Text="{Binding BalanceDisplay}" />
+                    </TextBlock>
+                    <Button Content="Record Payment" Style="{StaticResource AccentButtonStyle}" Click="RecordPayment_Click"
+                            Visibility="{Binding CanRecordPayment, Converter={StaticResource BoolToVisibilityConverter}}" HorizontalAlignment="Left" />
+                    <TextBlock Text="Save the ticket before recording a payment." Style="{StaticResource MutedTextStyle}"
+                               Visibility="{Binding IsNew, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <dg:DataGrid ItemsSource="{Binding Payments}" AutoGenerateColumns="False" IsReadOnly="True"
+                                 HeadersVisibility="Column" GridLinesVisibility="Horizontal" MinHeight="120" MaxHeight="320">
+                        <dg:DataGrid.Columns>
+                            <dg:DataGridTextColumn Header="Date" Binding="{Binding PaidAtUtc}" Width="140" />
+                            <dg:DataGridTextColumn Header="Method" Binding="{Binding Method}" Width="120" />
+                            <dg:DataGridTextColumn Header="Amount" Binding="{Binding Amount}" Width="120" />
+                        </dg:DataGrid.Columns>
+                    </dg:DataGrid>
+                </StackPanel>
+            </PivotItem>
+
+            <PivotItem Header="Notes">
+                <StackPanel Spacing="12" Padding="0,16,0,0" MaxWidth="700">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox Text="{Binding NewNoteText, Mode=TwoWay}" PlaceholderText="Add a note..." Width="500" />
+                        <Button Content="Add" Command="{Binding AddNoteCommand}" />
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding Notes}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,8">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                                        <TextBlock Style="{StaticResource MutedTextStyle}">
+                                            <Run Text="{Binding Author}" /><Run Text=" · " /><Run Text="{Binding CreatedAtUtc}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </PivotItem>
+
+            <PivotItem Header="Photos &amp; Signature">
+                <ScrollViewer Padding="0,16,0,0">
+                    <StackPanel Spacing="16" MaxWidth="700">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Photos" Style="{StaticResource SectionHeaderStyle}" />
+                            <Button Grid.Column="1" Content="Add Photo" Click="AddPhoto_Click" />
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding Photos}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource CardBorderStyle}" Width="120" Height="120">
+                                        <Image Source="{Binding FilePath}" Stretch="UniformToFill" />
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="Customer Signature" Style="{StaticResource SectionHeaderStyle}" />
+                        <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="4">
+                            <Canvas x:Name="SignatureCanvas" Height="200" Background="White"
+                                    PointerPressed="SignatureCanvas_PointerPressed"
+                                    PointerMoved="SignatureCanvas_PointerMoved"
+                                    PointerReleased="SignatureCanvas_PointerReleased" />
+                        </Border>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="Clear" Click="ClearSignature_Click" />
+                            <Button Content="Save Signature" Style="{StaticResource AccentButtonStyle}" Click="SaveSignature_Click" />
+                        </StackPanel>
+                        <Image Source="{Binding SignatureImagePath}" MaxHeight="100" HorizontalAlignment="Left"
+                               Visibility="{Binding HasSignature, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </StackPanel>
+                </ScrollViewer>
+            </PivotItem>
+        </Pivot>
+    </Grid>
+</Page>

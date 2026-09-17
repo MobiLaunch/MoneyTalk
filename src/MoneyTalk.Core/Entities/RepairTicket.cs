@@ -5,6 +5,7 @@ namespace MoneyTalk.Core.Entities;
 /// their workflow stages.</summary>
 public class RepairTicket : CompanyOwnedEntity
 {
+    public string TicketNumber { get; set; } = string.Empty;
     public Guid? CustomerId { get; set; }
     public string Device { get; set; } = string.Empty;
     public string? DeviceModel { get; set; }
