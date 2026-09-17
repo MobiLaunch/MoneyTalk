@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -30,12 +31,32 @@ public partial class App : Application
     {
         InitializeComponent();
 
-        AppPaths.EnsureFoldersExist();
+        // Without these, a startup failure in an unpackaged WinExe app is invisible: there's no
+        // console to print to, and if Windows Error Reporting is off on the machine the process
+        // just flashes and vanishes with nothing on screen. Every path below gets a message box
+        // with the real exception instead of a silent exit.
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+            ShowFatalErrorAndExit("Unhandled exception", e.ExceptionObject as Exception);
+        UnhandledException += (_, e) =>
+        {
+            e.Handled = true;
+            ShowFatalErrorAndExit("Unhandled UI exception", e.Exception);
+        };
 
-        _host = Host.CreateDefaultBuilder()
-            .ConfigureServices(ConfigureServices)
-            .Build();
-        Services = _host.Services;
+        try
+        {
+            AppPaths.EnsureFoldersExist();
+
+            _host = Host.CreateDefaultBuilder()
+                .ConfigureServices(ConfigureServices)
+                .Build();
+            Services = _host.Services;
+        }
+        catch (Exception ex)
+        {
+            ShowFatalErrorAndExit("Startup failed while configuring services", ex);
+            throw;
+        }
     }
 
     private static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
@@ -126,13 +147,30 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        using (var scopeContext = Services.GetRequiredService<MoneyTalkDbContext>())
+        try
         {
-            scopeContext.Database.EnsureCreated();
-        }
+            using (var scopeContext = Services.GetRequiredService<MoneyTalkDbContext>())
+            {
+                scopeContext.Database.EnsureCreated();
+            }
 
-        _window = new MainWindow();
-        MainWindow = _window;
-        _window.Activate();
+            _window = new MainWindow();
+            MainWindow = _window;
+            _window.Activate();
+        }
+        catch (Exception ex)
+        {
+            ShowFatalErrorAndExit("Startup failed while launching the main window", ex);
+        }
     }
+
+    private static void ShowFatalErrorAndExit(string title, Exception? ex)
+    {
+        var message = ex?.ToString() ?? "An unknown fatal error occurred (no exception details were captured).";
+        MessageBoxW(IntPtr.Zero, message, $"MoneyTalk — {title}", 0x00000010 /* MB_ICONERROR */);
+        Environment.Exit(1);
+    }
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, EntryPoint = "MessageBoxW")]
+    private static extern int MessageBoxW(IntPtr hWnd, string text, string caption, uint type);
 }

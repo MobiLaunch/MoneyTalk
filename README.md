@@ -80,6 +80,14 @@ it locally. This is why the secure-token store uses DPAPI rather than the Creden
 - Visual Studio 2022 (17.9+) with the **.NET Desktop Development** and **Windows App SDK C#**
   workloads, or the .NET 8 SDK + [Windows App SDK](https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads) tooling from the CLI
 - Windows 10 SDK 10.0.19041.0 or later (installed with the workload above)
+- The **Windows App Runtime** redistributable matching the `Microsoft.WindowsAppSDK` NuGet
+  version in `MoneyTalk.App.csproj` (currently 2.5.x), installed system-wide. This project is
+  framework-dependent (`WindowsAppSDKSelfContained=false`), so the runtime has to already be on
+  the machine — the NuGet package alone only gets you the build-time SDK, not the thing that
+  actually runs at launch. Get it from https://aka.ms/windowsappsdk/redistribution, or it's
+  installed automatically alongside the "Windows App SDK C#" Visual Studio workload. If the app
+  builds cleanly but the window never appears with no visible error, this is the first thing to
+  check.
 
 ### Build & run
 ```powershell
