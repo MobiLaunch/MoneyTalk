@@ -34,6 +34,14 @@ public class EfUnitOfWork : IUnitOfWork
         AiConversations = new GenericRepository<AiConversation>(context, q => q.Include(c => c.Messages));
         AiInsights = new GenericRepository<AiInsight>(context);
         Users = new GenericRepository<User>(context);
+        RepairTickets = new GenericRepository<RepairTicket>(context, q => q.Include(t => t.Notes).Include(t => t.Lines).Include(t => t.Payments));
+        HouseCalls = new GenericRepository<HouseCall>(context);
+        Appointments = new GenericRepository<Appointment>(context);
+        VendorRepairs = new GenericRepository<VendorRepair>(context);
+        TradeIns = new GenericRepository<TradeIn>(context);
+        DeviceBrands = new GenericRepository<DeviceBrand>(context);
+        DeviceCategories = new GenericRepository<DeviceCategory>(context);
+        DeviceModels = new GenericRepository<DeviceModel>(context);
     }
 
     public IRepository<Company> Companies { get; }
@@ -58,6 +66,14 @@ public class EfUnitOfWork : IUnitOfWork
     public IRepository<AiConversation> AiConversations { get; }
     public IRepository<AiInsight> AiInsights { get; }
     public IRepository<User> Users { get; }
+    public IRepository<RepairTicket> RepairTickets { get; }
+    public IRepository<HouseCall> HouseCalls { get; }
+    public IRepository<Appointment> Appointments { get; }
+    public IRepository<VendorRepair> VendorRepairs { get; }
+    public IRepository<TradeIn> TradeIns { get; }
+    public IRepository<DeviceBrand> DeviceBrands { get; }
+    public IRepository<DeviceCategory> DeviceCategories { get; }
+    public IRepository<DeviceModel> DeviceModels { get; }
 
     public Task<int> SaveChangesAsync(CancellationToken ct = default) => _context.SaveChangesAsync(ct);
 

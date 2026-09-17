@@ -32,6 +32,14 @@ public class MoneyTalkDbContext : DbContext
     public DbSet<AiConversation> AiConversations => Set<AiConversation>();
     public DbSet<AiInsight> AiInsights => Set<AiInsight>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<RepairTicket> RepairTickets => Set<RepairTicket>();
+    public DbSet<HouseCall> HouseCalls => Set<HouseCall>();
+    public DbSet<Appointment> Appointments => Set<Appointment>();
+    public DbSet<VendorRepair> VendorRepairs => Set<VendorRepair>();
+    public DbSet<TradeIn> TradeIns => Set<TradeIn>();
+    public DbSet<DeviceBrand> DeviceBrands => Set<DeviceBrand>();
+    public DbSet<DeviceCategory> DeviceCategories => Set<DeviceCategory>();
+    public DbSet<DeviceModel> DeviceModels => Set<DeviceModel>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -147,6 +155,36 @@ public class MoneyTalkDbContext : DbContext
         modelBuilder.Entity<AiConversation>(b => b.HasMany(c => c.Messages).WithOne().HasForeignKey(m => m.ConversationId).OnDelete(DeleteBehavior.Cascade));
 
         modelBuilder.Entity<TaxRate>(b => b.Property(t => t.RatePercent).HasPrecision(9, 4));
+
+        modelBuilder.Entity<RepairTicket>(b =>
+        {
+            b.HasMany(t => t.Notes).WithOne().HasForeignKey(n => n.RepairTicketId).OnDelete(DeleteBehavior.Cascade);
+            b.HasMany(t => t.Lines).WithOne().HasForeignKey(l => l.RepairTicketId).OnDelete(DeleteBehavior.Cascade);
+            b.HasMany(t => t.Payments).WithOne().HasForeignKey(p => p.RepairTicketId).OnDelete(DeleteBehavior.Cascade);
+            b.Property(t => t.Price).HasPrecision(18, 2);
+            b.HasIndex(t => new { t.CompanyId, t.Status });
+        });
+        modelBuilder.Entity<RepairTicketLine>(b =>
+        {
+            b.Property(l => l.Quantity).HasPrecision(18, 4);
+            b.Property(l => l.UnitPrice).HasPrecision(18, 2);
+        });
+        modelBuilder.Entity<RepairTicketPayment>(b => b.Property(p => p.Amount).HasPrecision(18, 2));
+
+        modelBuilder.Entity<TradeIn>(b =>
+        {
+            b.Property(t => t.AgeYears).HasPrecision(4, 1);
+            b.Property(t => t.MarketPrice).HasPrecision(18, 2);
+            b.Property(t => t.RepairCostEstimate).HasPrecision(18, 2);
+            b.Property(t => t.OfferPrice).HasPrecision(18, 2);
+            b.Property(t => t.EstimatedResaleValue).HasPrecision(18, 2);
+            b.Property(t => t.EstimatedProfit).HasPrecision(18, 2);
+            b.HasIndex(t => new { t.CompanyId, t.Status });
+        });
+
+        modelBuilder.Entity<DeviceBrand>(b => b.HasIndex(x => new { x.CompanyId, x.Name }).IsUnique());
+        modelBuilder.Entity<DeviceCategory>(b => b.HasIndex(x => new { x.CompanyId, x.Name }).IsUnique());
+        modelBuilder.Entity<DeviceModel>(b => b.HasIndex(x => new { x.CompanyId, x.DeviceBrandId, x.DeviceCategoryId, x.Name }).IsUnique());
     }
 
     private static void ConfigureEnumsAsStrings(ModelBuilder modelBuilder)
@@ -169,5 +207,12 @@ public class MoneyTalkDbContext : DbContext
         modelBuilder.Entity<AiInsight>().Property(i => i.Severity).HasConversion<string>();
         modelBuilder.Entity<AiMessage>().Property(m => m.Role).HasConversion<string>();
         modelBuilder.Entity<User>().Property(u => u.Role).HasConversion<string>();
+        modelBuilder.Entity<RepairTicket>().Property(t => t.Priority).HasConversion<string>();
+        modelBuilder.Entity<RepairTicketPayment>().Property(p => p.Method).HasConversion<string>();
+        modelBuilder.Entity<HouseCall>().Property(h => h.Status).HasConversion<string>();
+        modelBuilder.Entity<Appointment>().Property(a => a.Status).HasConversion<string>();
+        modelBuilder.Entity<TradeIn>().Property(t => t.ConditionGrade).HasConversion<string>();
+        modelBuilder.Entity<TradeIn>().Property(t => t.ScreenCondition).HasConversion<string>();
+        modelBuilder.Entity<TradeIn>().Property(t => t.Status).HasConversion<string>();
     }
 }

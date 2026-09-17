@@ -31,4 +31,9 @@ public class Company : EntityBase
     public Guid? DefaultSalesTaxLiabilityAccountId { get; set; }
     public Guid? DefaultRetainedEarningsAccountId { get; set; }
     public Guid? DefaultOpeningBalanceEquityAccountId { get; set; }
+
+    /// <summary>Comma-separated, shop-editable list of valid <see cref="RepairTicket.Status"/>
+    /// values, in workflow order (e.g. "Open, In Progress, Waiting for Parts, Completed,
+    /// Delivered"). Kept as free text rather than an enum since repair shops vary this list.</summary>
+    public string TicketStatuses { get; set; } = "Open, In Progress, Waiting for Parts, Completed, Delivered";
 }

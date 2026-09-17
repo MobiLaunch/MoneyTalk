@@ -159,3 +159,52 @@ public enum AiMessageRole
     User,
     Assistant
 }
+
+public enum TicketPriority
+{
+    Low,
+    Normal,
+    High,
+    Urgent
+}
+
+public enum HouseCallStatus
+{
+    Scheduled,
+    Completed,
+    Cancelled
+}
+
+public enum AppointmentStatus
+{
+    Scheduled,
+    Confirmed,
+    Completed,
+    Cancelled,
+    NoShow
+}
+
+public enum TradeInStatus
+{
+    Pending,
+    Accepted,
+    Declined,
+    Completed
+}
+
+/// <summary>Overall physical/functional grade a device is assessed at during trade-in intake.</summary>
+public enum ConditionGrade
+{
+    Excellent,
+    Good,
+    Fair,
+    Poor
+}
+
+public enum ScreenCondition
+{
+    Perfect,
+    MinorScratches,
+    Cracked,
+    Shattered
+}

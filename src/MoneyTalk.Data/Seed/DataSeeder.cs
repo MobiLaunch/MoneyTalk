@@ -53,8 +53,102 @@ public static class DataSeeder
         };
         await uow.Users.AddAsync(owner, ct);
 
+        var serviceIncomeAccountId = Find("4010");
+        foreach (var item in BuildDefaultRepairServiceCatalog(company.Id, serviceIncomeAccountId))
+            await uow.Items.AddAsync(item, ct);
+
+        await SeedDeviceCatalogAsync(uow, company.Id, ct);
+
         await uow.SaveChangesAsync(ct);
         return company;
+    }
+
+    /// <summary>Tiered minimum-profit pricing: cheaper parts carry a higher markup so labor
+    /// (roughly fixed regardless of part cost) is still covered on low-cost repairs.</summary>
+    private static decimal CalculateRepairPrice(decimal partCost)
+    {
+        var profit = partCost switch
+        {
+            < 20m => 125m,
+            <= 50m => 120m,
+            <= 100m => 115m,
+            _ => 110m
+        };
+        return partCost + profit;
+    }
+
+    public static List<Item> BuildDefaultRepairServiceCatalog(Guid companyId, Guid incomeAccountId)
+    {
+        var definitions = new (string Name, decimal PartCost, string Category)[]
+        {
+            ("iPhone 11 Screen Repair", 25m, "Smartphone Repair"),
+            ("iPhone 12 Screen Repair", 35m, "Smartphone Repair"),
+            ("iPhone 13 Screen Repair", 45m, "Smartphone Repair"),
+            ("iPhone 14 Screen Repair", 65m, "Smartphone Repair"),
+            ("iPhone 15 Screen Repair", 90m, "Smartphone Repair"),
+            ("iPhone Battery Replacement (Older Models)", 15m, "Smartphone Repair"),
+            ("iPhone Battery Replacement (Newer Models)", 25m, "Smartphone Repair"),
+            ("iPad Glass Repair", 15m, "Tablet Repair"),
+            ("iPad Screen Repair", 100m, "Tablet Repair"),
+            ("Samsung Galaxy S22 Screen Repair", 120m, "Smartphone Repair"),
+            ("Samsung Galaxy S23 Screen Repair", 150m, "Smartphone Repair"),
+            ("Samsung Galaxy S24 Screen Repair", 180m, "Smartphone Repair"),
+            ("PS5 Port Microsoldering Repair", 5m, "Console Repair"),
+            ("Xbox Port Microsoldering Repair", 5m, "Console Repair"),
+            ("Nintendo Switch Port Microsoldering Repair", 5m, "Console Repair"),
+        };
+
+        var items = definitions.Select(d => new Item
+        {
+            CompanyId = companyId,
+            Sku = string.Empty,
+            Name = d.Name,
+            Description = d.Category,
+            Type = ItemType.Service,
+            SalesPrice = CalculateRepairPrice(d.PartCost),
+            Cost = d.PartCost,
+            IncomeAccountId = incomeAccountId,
+            IsActive = true
+        }).ToList();
+
+        items.Add(new Item
+        {
+            CompanyId = companyId, Name = "Liquid Damage Cleaning & Diagnostics", Description = "Diagnostics",
+            Type = ItemType.Service, SalesPrice = 110m, Cost = 0m, IncomeAccountId = incomeAccountId, IsActive = true
+        });
+        items.Add(new Item
+        {
+            CompanyId = companyId, Name = "Data Recovery — Level 1", Description = "Data Recovery",
+            Type = ItemType.Service, SalesPrice = 150m, Cost = 0m, IncomeAccountId = incomeAccountId, IsActive = true
+        });
+
+        return items;
+    }
+
+    private static async Task SeedDeviceCatalogAsync(IUnitOfWork uow, Guid companyId, CancellationToken ct)
+    {
+        var categories = new[]
+        {
+            new DeviceCategory { CompanyId = companyId, Name = "Smartphone", Emoji = "📱" },
+            new DeviceCategory { CompanyId = companyId, Name = "Tablet", Emoji = "📱" },
+            new DeviceCategory { CompanyId = companyId, Name = "Laptop", Emoji = "💻" },
+            new DeviceCategory { CompanyId = companyId, Name = "Watch", Emoji = "⌚" },
+            new DeviceCategory { CompanyId = companyId, Name = "Gaming Console", Emoji = "🎮" },
+        };
+        foreach (var category in categories) await uow.DeviceCategories.AddAsync(category, ct);
+
+        var brands = new[]
+        {
+            new DeviceBrand { CompanyId = companyId, Name = "Apple" },
+            new DeviceBrand { CompanyId = companyId, Name = "Samsung" },
+            new DeviceBrand { CompanyId = companyId, Name = "Google" },
+            new DeviceBrand { CompanyId = companyId, Name = "Microsoft" },
+            new DeviceBrand { CompanyId = companyId, Name = "Sony" },
+        };
+        foreach (var brand in brands) await uow.DeviceBrands.AddAsync(brand, ct);
+
+        // No default DeviceModel rows — shops add their own as tickets/trade-ins come in
+        // (matches the source system's brand/category-only starter set).
     }
 
     public static List<Account> BuildDefaultChartOfAccounts(Guid companyId)

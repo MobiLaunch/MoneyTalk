@@ -30,6 +30,14 @@ public interface IUnitOfWork : IDisposable
     IRepository<AiConversation> AiConversations { get; }
     IRepository<AiInsight> AiInsights { get; }
     IRepository<User> Users { get; }
+    IRepository<RepairTicket> RepairTickets { get; }
+    IRepository<HouseCall> HouseCalls { get; }
+    IRepository<Appointment> Appointments { get; }
+    IRepository<VendorRepair> VendorRepairs { get; }
+    IRepository<TradeIn> TradeIns { get; }
+    IRepository<DeviceBrand> DeviceBrands { get; }
+    IRepository<DeviceCategory> DeviceCategories { get; }
+    IRepository<DeviceModel> DeviceModels { get; }
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }
