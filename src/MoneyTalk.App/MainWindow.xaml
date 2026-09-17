@@ -26,13 +26,13 @@
 
             <NavigationViewItem Content="Products &amp; Services" Tag="Items" Icon="Tag" />
 
-            <NavigationViewItem Content="Bank Accounts" Tag="BankAccounts" Icon="Money" />
+            <NavigationViewItem Content="Bank Accounts" Tag="BankAccounts" Icon="Account" />
             <NavigationViewItem Content="Reconciliation" Tag="Reconciliation" Icon="Sync" />
 
             <NavigationViewItem Content="Budgets" Tag="Budgets" Icon="Calculator" />
             <NavigationViewItem Content="Recurring Transactions" Tag="RecurringTransactions" Icon="Refresh" />
 
-            <NavigationViewItem Content="Reports" Tag="Reports" Icon="ReportDocument" />
+            <NavigationViewItem Content="Reports" Tag="Reports" Icon="Page2" />
             <NavigationViewItem Content="AI Assistant" Tag="AiAssistant" Icon="Message" />
         </NavigationView.MenuItems>
 
