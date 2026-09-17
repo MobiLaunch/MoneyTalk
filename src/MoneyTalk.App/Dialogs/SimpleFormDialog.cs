@@ -13,6 +13,7 @@ public class SimpleFormDialog : ContentDialog
     private readonly Dictionary<string, ComboBox> _comboBoxes = new();
     private readonly Dictionary<string, CheckBox> _checkBoxes = new();
     private readonly Dictionary<string, NumberBox> _numberBoxes = new();
+    private readonly Dictionary<string, DatePicker> _datePickers = new();
 
     public SimpleFormDialog(string title, IEnumerable<FormFieldDescriptor> fields)
     {
@@ -63,6 +64,11 @@ public class SimpleFormDialog : ContentDialog
                 _numberBoxes[field.Key] = numberBox;
                 return numberBox;
 
+            case DateFieldDescriptor date:
+                var datePicker = new DatePicker { Header = field.Label, Date = date.InitialValue };
+                _datePickers[field.Key] = datePicker;
+                return datePicker;
+
             default:
                 throw new NotSupportedException($"Unknown field descriptor type {field.GetType().Name}.");
         }
@@ -73,4 +79,5 @@ public class SimpleFormDialog : ContentDialog
     public string GetComboValue(string key) => _comboBoxes[key].SelectedItem as string ?? string.Empty;
     public bool GetBool(string key) => _checkBoxes[key].IsChecked == true;
     public double GetNumber(string key) => _numberBoxes[key].Value;
+    public DateTimeOffset GetDate(string key) => _datePickers[key].Date;
 }

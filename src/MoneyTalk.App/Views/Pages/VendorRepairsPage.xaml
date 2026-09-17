@@ -1,0 +1,59 @@
+<Page
+    x:Class="MoneyTalk.App.Views.Pages.VendorRepairsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dg="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controls="using:MoneyTalk.App.Controls">
+
+    <Grid Padding="24" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Vendor Repairs" Style="{StaticResource PageTitleStyle}" Margin="0" />
+            <Button Grid.Column="1" Content="Send Device to Vendor" Style="{StaticResource AccentButtonStyle}" Click="AddVendorRepair_Click" VerticalAlignment="Center" />
+        </Grid>
+
+        <controls:BusyErrorBar Grid.Row="1" IsBusy="{Binding IsBusy}" ErrorMessage="{Binding ErrorMessage}" />
+
+        <Grid Grid.Row="2">
+            <dg:DataGrid ItemsSource="{Binding VendorRepairs}" AutoGenerateColumns="False"
+                         IsReadOnly="True" SelectedItem="{Binding SelectedVendorRepair, Mode=TwoWay}"
+                         GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                         DoubleTapped="Grid_DoubleTapped">
+                <dg:DataGrid.Columns>
+                    <dg:DataGridTextColumn Header="Device" Binding="{Binding Device}" Width="160" />
+                    <dg:DataGridTextColumn Header="Issue" Binding="{Binding Issue}" Width="180" />
+                    <dg:DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="150" />
+                    <dg:DataGridTextColumn Header="Vendor" Binding="{Binding VendorName}" Width="140" />
+                    <dg:DataGridTextColumn Header="Tracking #" Binding="{Binding TrackingNumber}" Width="120" />
+                    <dg:DataGridTextColumn Header="Sent" Binding="{Binding SentDate}" Width="110" />
+                    <dg:DataGridTemplateColumn Header="Est. Return" Width="150">
+                        <dg:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{Binding EstimatedReturnDate}" VerticalAlignment="Center" />
+                                    <Border Background="{StaticResource MoneyTalkNegativeBrush}" CornerRadius="4" Padding="4,1"
+                                            Visibility="{Binding IsOverdue, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <TextBlock Text="OVERDUE" Foreground="White" FontSize="11" />
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                        </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+                    <dg:DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="140" />
+                </dg:DataGrid.Columns>
+            </dg:DataGrid>
+            <TextBlock Text="No devices sent out to vendors." Style="{StaticResource MutedTextStyle}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Visibility="{Binding VendorRepairs.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=Invert}" />
+        </Grid>
+    </Grid>
+</Page>

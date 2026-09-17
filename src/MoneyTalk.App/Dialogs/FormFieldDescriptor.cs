@@ -29,3 +29,8 @@ public class NumberFieldDescriptor : FormFieldDescriptor
     public double Minimum { get; init; } = 0;
     public double Maximum { get; init; } = 1_000_000_000;
 }
+
+public class DateFieldDescriptor : FormFieldDescriptor
+{
+    public DateTimeOffset InitialValue { get; init; } = DateTimeOffset.Now.Date;
+}

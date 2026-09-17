@@ -135,6 +135,8 @@ public partial class App : Application
         services.AddTransient<TicketsViewModel>();
         services.AddTransient<TicketEditViewModel>();
         services.AddTransient<PosViewModel>();
+        services.AddTransient<CalendarViewModel>();
+        services.AddTransient<VendorRepairsViewModel>();
         services.AddTransient<VendorsViewModel>();
         services.AddTransient<BillsViewModel>();
         services.AddTransient<BillEditViewModel>();
