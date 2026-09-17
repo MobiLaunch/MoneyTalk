@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using MoneyTalk.App.Dialogs;
@@ -31,7 +32,9 @@ public sealed partial class CustomersPage : Page
             new TextFieldDescriptor { Key = "email", Label = "Email" },
             new TextFieldDescriptor { Key = "phone", Label = "Phone" },
             new NumberFieldDescriptor { Key = "terms", Label = "Payment terms (days)", InitialValue = 30, Minimum = 0, Maximum = 365 },
-            new CheckboxFieldDescriptor { Key = "taxExempt", Label = "Tax exempt" }
+            new CheckboxFieldDescriptor { Key = "taxExempt", Label = "Tax exempt" },
+            new TextFieldDescriptor { Key = "driversLicense", Label = "Driver's license (optional)" },
+            new TextFieldDescriptor { Key = "tags", Label = "Tags (comma-separated, optional)" }
         })
         { XamlRoot = this.XamlRoot };
 
@@ -40,7 +43,49 @@ public sealed partial class CustomersPage : Page
 
         await ViewModel.AddCustomerAsync(
             dialog.GetText("name"), dialog.GetText("email"), dialog.GetText("phone"),
-            (int)dialog.GetNumber("terms"), dialog.GetBool("taxExempt"));
+            (int)dialog.GetNumber("terms"), dialog.GetBool("taxExempt"),
+            dialog.GetText("driversLicense"), dialog.GetText("tags"));
+    }
+
+    private async void ViewTickets_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var customer = ViewModel.SelectedCustomer;
+        if (customer == null) return;
+
+        var tickets = await ViewModel.GetCustomerTicketsAsync(customer.Id);
+
+        var panel = new StackPanel { Spacing = 8, MinWidth = 420 };
+        if (tickets.Count == 0)
+        {
+            panel.Children.Add(new TextBlock { Text = "This customer has no repair tickets yet." });
+        }
+        else
+        {
+            foreach (var ticket in tickets)
+            {
+                panel.Children.Add(new Border
+                {
+                    Style = (Style)Application.Current.Resources["CardBorderStyle"],
+                    Child = new StackPanel
+                    {
+                        Children =
+                        {
+                            new TextBlock { Text = $"{ticket.TicketNumber} — {ticket.Device}", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                            new TextBlock { Text = $"{ticket.Issue} · {ticket.Status} · Balance {ticket.Balance:C2}" }
+                        }
+                    }
+                });
+            }
+        }
+
+        var dialog = new ContentDialog
+        {
+            Title = $"Tickets for {customer.Name}",
+            Content = new ScrollViewer { Content = panel, MaxHeight = 480 },
+            CloseButtonText = "Close",
+            XamlRoot = this.XamlRoot
+        };
+        await dialog.ShowAsync();
     }
 
     private async void CustomersGrid_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
@@ -55,7 +100,9 @@ public sealed partial class CustomersPage : Page
             new TextFieldDescriptor { Key = "phone", Label = "Phone", InitialValue = customer.Phone ?? string.Empty },
             new NumberFieldDescriptor { Key = "terms", Label = "Payment terms (days)", InitialValue = customer.PaymentTermsDays, Minimum = 0, Maximum = 365 },
             new CheckboxFieldDescriptor { Key = "taxExempt", Label = "Tax exempt", InitialValue = customer.TaxExempt },
-            new CheckboxFieldDescriptor { Key = "isActive", Label = "Active", InitialValue = customer.IsActive }
+            new CheckboxFieldDescriptor { Key = "isActive", Label = "Active", InitialValue = customer.IsActive },
+            new TextFieldDescriptor { Key = "driversLicense", Label = "Driver's license (optional)", InitialValue = customer.DriversLicense ?? string.Empty },
+            new TextFieldDescriptor { Key = "tags", Label = "Tags (comma-separated, optional)", InitialValue = customer.Tags ?? string.Empty }
         })
         { XamlRoot = this.XamlRoot };
 
@@ -64,6 +111,7 @@ public sealed partial class CustomersPage : Page
 
         await ViewModel.EditCustomerAsync(
             customer.Id, dialog.GetText("name"), dialog.GetText("email"), dialog.GetText("phone"),
-            (int)dialog.GetNumber("terms"), dialog.GetBool("taxExempt"), dialog.GetBool("isActive"));
+            (int)dialog.GetNumber("terms"), dialog.GetBool("taxExempt"), dialog.GetBool("isActive"),
+            dialog.GetText("driversLicense"), dialog.GetText("tags"));
     }
 }

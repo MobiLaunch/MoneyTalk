@@ -34,7 +34,9 @@ public partial class CustomersViewModel : ViewModelBase
         });
     }
 
-    public async Task<bool> AddCustomerAsync(string name, string email, string phone, int paymentTermsDays, bool taxExempt)
+    public async Task<bool> AddCustomerAsync(
+        string name, string email, string phone, int paymentTermsDays, bool taxExempt,
+        string? driversLicense = null, string? tags = null)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -53,7 +55,9 @@ public partial class CustomersViewModel : ViewModelBase
                 Email = string.IsNullOrWhiteSpace(email) ? null : email.Trim(),
                 Phone = string.IsNullOrWhiteSpace(phone) ? null : phone.Trim(),
                 PaymentTermsDays = paymentTermsDays,
-                TaxExempt = taxExempt
+                TaxExempt = taxExempt,
+                DriversLicense = string.IsNullOrWhiteSpace(driversLicense) ? null : driversLicense.Trim(),
+                Tags = string.IsNullOrWhiteSpace(tags) ? null : tags.Trim()
             };
             await uow.Customers.AddAsync(customer);
             await uow.SaveChangesAsync();
@@ -63,6 +67,24 @@ public partial class CustomersViewModel : ViewModelBase
         return success;
     }
 
+    /// <summary>Summary rows for the read-only "View Tickets" dialog on the Customers page.</summary>
+    public async Task<List<TicketListRow>> GetCustomerTicketsAsync(Guid customerId)
+    {
+        using var uow = NewUnitOfWork();
+        var tickets = await uow.RepairTickets.FindAsync(t => t.CustomerId == customerId);
+        return tickets.OrderByDescending(t => t.CreatedAtUtc).Select(t => new TicketListRow
+        {
+            Id = t.Id,
+            TicketNumber = t.TicketNumber,
+            Device = string.IsNullOrWhiteSpace(t.DeviceModel) ? t.Device : $"{t.Device} {t.DeviceModel}",
+            Issue = t.Issue,
+            Status = t.Status,
+            Priority = t.Priority,
+            CreatedAtUtc = t.CreatedAtUtc,
+            Balance = t.Balance
+        }).ToList();
+    }
+
     [RelayCommand]
     private void NewInvoiceForSelected()
     {
@@ -70,7 +92,9 @@ public partial class CustomersViewModel : ViewModelBase
         _navigationService.NavigateTo(PageKeys.InvoiceEdit, new InvoiceEditNavigationArgs(null, SelectedCustomer.Id));
     }
 
-    public async Task<bool> EditCustomerAsync(Guid customerId, string name, string email, string phone, int paymentTermsDays, bool taxExempt, bool isActive)
+    public async Task<bool> EditCustomerAsync(
+        Guid customerId, string name, string email, string phone, int paymentTermsDays, bool taxExempt, bool isActive,
+        string? driversLicense = null, string? tags = null)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -90,6 +114,8 @@ public partial class CustomersViewModel : ViewModelBase
             customer.PaymentTermsDays = paymentTermsDays;
             customer.TaxExempt = taxExempt;
             customer.IsActive = isActive;
+            customer.DriversLicense = string.IsNullOrWhiteSpace(driversLicense) ? null : driversLicense.Trim();
+            customer.Tags = string.IsNullOrWhiteSpace(tags) ? null : tags.Trim();
             uow.Customers.Update(customer);
             await uow.SaveChangesAsync();
             success = true;

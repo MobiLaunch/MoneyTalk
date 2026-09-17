@@ -36,7 +36,9 @@ public sealed partial class ItemsPage : Page
             new ComboFieldDescriptor { Key = "type", Label = "Type", Options = ItemsViewModel.ItemTypeOptions },
             new NumberFieldDescriptor { Key = "price", Label = "Sales price", Minimum = 0 },
             new NumberFieldDescriptor { Key = "cost", Label = "Cost", Minimum = 0 },
-            new ComboFieldDescriptor { Key = "incomeAccount", Label = "Income account", Options = incomeAccountNames }
+            new ComboFieldDescriptor { Key = "incomeAccount", Label = "Income account", Options = incomeAccountNames },
+            new NumberFieldDescriptor { Key = "quantityOnHand", Label = "Quantity on hand (inventory items only)", Minimum = 0 },
+            new NumberFieldDescriptor { Key = "reorderPoint", Label = "Low-stock alert threshold (inventory items only)", Minimum = 0 }
         })
         { XamlRoot = this.XamlRoot };
 
@@ -51,7 +53,8 @@ public sealed partial class ItemsPage : Page
 
         await ViewModel.AddItemAsync(
             dialog.GetText("sku"), dialog.GetText("name"), type,
-            (decimal)dialog.GetNumber("price"), (decimal)dialog.GetNumber("cost"), incomeAccountId);
+            (decimal)dialog.GetNumber("price"), (decimal)dialog.GetNumber("cost"), incomeAccountId,
+            (decimal)dialog.GetNumber("quantityOnHand"), (decimal)dialog.GetNumber("reorderPoint"));
     }
 
     private async void ItemsGrid_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
@@ -73,7 +76,9 @@ public sealed partial class ItemsPage : Page
             new NumberFieldDescriptor { Key = "price", Label = "Sales price", InitialValue = (double)item.SalesPrice, Minimum = 0 },
             new NumberFieldDescriptor { Key = "cost", Label = "Cost", InitialValue = (double)item.Cost, Minimum = 0 },
             new ComboFieldDescriptor { Key = "incomeAccount", Label = "Income account", Options = incomeAccountNames, InitialIndex = Math.Max(currentIndex, 0) },
-            new CheckboxFieldDescriptor { Key = "isActive", Label = "Active", InitialValue = item.IsActive }
+            new CheckboxFieldDescriptor { Key = "isActive", Label = "Active", InitialValue = item.IsActive },
+            new NumberFieldDescriptor { Key = "quantityOnHand", Label = "Quantity on hand (inventory items only)", InitialValue = (double)item.QuantityOnHand, Minimum = 0 },
+            new NumberFieldDescriptor { Key = "reorderPoint", Label = "Low-stock alert threshold (inventory items only)", InitialValue = (double)item.ReorderPoint, Minimum = 0 }
         })
         { XamlRoot = this.XamlRoot };
 
@@ -88,6 +93,7 @@ public sealed partial class ItemsPage : Page
 
         await ViewModel.EditItemAsync(
             item.Id, dialog.GetText("sku"), dialog.GetText("name"), type,
-            (decimal)dialog.GetNumber("price"), (decimal)dialog.GetNumber("cost"), incomeAccountId, dialog.GetBool("isActive"));
+            (decimal)dialog.GetNumber("price"), (decimal)dialog.GetNumber("cost"), incomeAccountId, dialog.GetBool("isActive"),
+            (decimal)dialog.GetNumber("quantityOnHand"), (decimal)dialog.GetNumber("reorderPoint"));
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
+using MoneyTalk.Core.Entities;
 
 namespace MoneyTalk.App.Converters;
 
@@ -74,6 +75,20 @@ public class SignedCurrencyBrushConverter : IValueConverter
         var key = amount < 0 ? "MoneyTalkNegativeBrush" : "MoneyTalkPositiveBrush";
         return Application.Current.Resources[key];
     }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotSupportedException();
+}
+
+/// <summary>Visible when an inventory item's on-hand quantity has dropped to or below its reorder
+/// point — always collapsed for non-inventory items, which have no reorder concept. Drives a
+/// small low-stock badge rather than recoloring text, so it doesn't need to know/guess the
+/// theme's default foreground brush.</summary>
+public class LowStockToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language) =>
+        value is Item { Type: ItemType.Inventory } item && item.QuantityOnHand <= item.ReorderPoint
+            ? Visibility.Visible
+            : Visibility.Collapsed;
 
     public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotSupportedException();
 }

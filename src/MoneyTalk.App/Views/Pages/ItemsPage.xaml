@@ -34,7 +34,19 @@
                     <dg:DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="120" />
                     <dg:DataGridTextColumn Header="Sales Price" Binding="{Binding SalesPrice}" Width="120" />
                     <dg:DataGridTextColumn Header="Cost" Binding="{Binding Cost}" Width="120" />
-                    <dg:DataGridTextColumn Header="Qty on Hand" Binding="{Binding QuantityOnHand}" Width="110" />
+                    <dg:DataGridTemplateColumn Header="Qty on Hand" Width="150">
+                        <dg:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{Binding QuantityOnHand}" VerticalAlignment="Center" />
+                                    <Border Background="{StaticResource MoneyTalkNegativeBrush}" CornerRadius="4" Padding="4,1"
+                                            Visibility="{Binding Converter={StaticResource LowStockToVisibilityConverter}}">
+                                        <TextBlock Text="Low stock" Foreground="White" FontSize="11" />
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                        </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
                 </dg:DataGrid.Columns>
             </dg:DataGrid>
             <TextBlock Text="No items yet. Click &quot;Add Item&quot; to create one." Style="{StaticResource MutedTextStyle}"

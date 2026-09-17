@@ -17,10 +17,12 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock Text="Customers" Style="{StaticResource PageTitleStyle}" Margin="0" />
-            <Button Grid.Column="1" Content="New Invoice" Margin="0,0,8,0" Command="{Binding NewInvoiceForSelectedCommand}" VerticalAlignment="Center" />
-            <Button Grid.Column="2" Content="Add Customer" Style="{StaticResource AccentButtonStyle}" Click="AddCustomer_Click" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Content="View Tickets" Margin="0,0,8,0" Click="ViewTickets_Click" VerticalAlignment="Center" />
+            <Button Grid.Column="2" Content="New Invoice" Margin="0,0,8,0" Command="{Binding NewInvoiceForSelectedCommand}" VerticalAlignment="Center" />
+            <Button Grid.Column="3" Content="Add Customer" Style="{StaticResource AccentButtonStyle}" Click="AddCustomer_Click" VerticalAlignment="Center" />
         </Grid>
 
         <controls:BusyErrorBar Grid.Row="1" IsBusy="{Binding IsBusy}" ErrorMessage="{Binding ErrorMessage}" />
@@ -35,6 +37,7 @@
                     <dg:DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="220" />
                     <dg:DataGridTextColumn Header="Phone" Binding="{Binding Phone}" Width="150" />
                     <dg:DataGridTextColumn Header="Terms (days)" Binding="{Binding PaymentTermsDays}" Width="110" />
+                    <dg:DataGridTextColumn Header="Tags" Binding="{Binding Tags}" Width="160" />
                     <dg:DataGridTextColumn Header="Balance" Binding="{Binding Balance}" Width="140" />
                 </dg:DataGrid.Columns>
             </dg:DataGrid>

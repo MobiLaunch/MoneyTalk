@@ -39,7 +39,9 @@ public partial class ItemsViewModel : ViewModelBase
         });
     }
 
-    public async Task<bool> AddItemAsync(string sku, string name, ItemType type, decimal salesPrice, decimal cost, Guid? incomeAccountId)
+    public async Task<bool> AddItemAsync(
+        string sku, string name, ItemType type, decimal salesPrice, decimal cost, Guid? incomeAccountId,
+        decimal quantityOnHand = 0, decimal reorderPoint = 0)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -59,7 +61,9 @@ public partial class ItemsViewModel : ViewModelBase
                 Type = type,
                 SalesPrice = salesPrice,
                 Cost = cost,
-                IncomeAccountId = incomeAccountId
+                IncomeAccountId = incomeAccountId,
+                QuantityOnHand = type == ItemType.Inventory ? quantityOnHand : 0,
+                ReorderPoint = type == ItemType.Inventory ? reorderPoint : 0
             };
             await uow.Items.AddAsync(item);
             await uow.SaveChangesAsync();
@@ -69,7 +73,9 @@ public partial class ItemsViewModel : ViewModelBase
         return success;
     }
 
-    public async Task<bool> EditItemAsync(Guid itemId, string sku, string name, ItemType type, decimal salesPrice, decimal cost, Guid? incomeAccountId, bool isActive)
+    public async Task<bool> EditItemAsync(
+        Guid itemId, string sku, string name, ItemType type, decimal salesPrice, decimal cost, Guid? incomeAccountId, bool isActive,
+        decimal quantityOnHand = 0, decimal reorderPoint = 0)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -90,6 +96,11 @@ public partial class ItemsViewModel : ViewModelBase
             item.Cost = cost;
             item.IncomeAccountId = incomeAccountId;
             item.IsActive = isActive;
+            if (type == ItemType.Inventory)
+            {
+                item.QuantityOnHand = quantityOnHand;
+                item.ReorderPoint = reorderPoint;
+            }
             uow.Items.Update(item);
             await uow.SaveChangesAsync();
             success = true;
