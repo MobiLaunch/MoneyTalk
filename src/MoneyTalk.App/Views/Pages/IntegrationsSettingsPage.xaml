@@ -30,6 +30,9 @@
                     <TextBox Header="Redirect URL" Text="{Binding SquareRedirectUriInput, Mode=TwoWay}"
                              PlaceholderText="https://your-relay.workers.dev/square/callback" />
                     <TextBlock Text="This must be the deployed oauth-relay URL (see /oauth-relay in the repo) — it also needs to be entered as the Redirect URL in Square's dashboard, exactly matching." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+                    <ToggleSwitch Header="Use Sandbox (test) credentials" IsOn="{Binding SquareUseSandboxInput, Mode=TwoWay}"
+                                  OnContent="Sandbox" OffContent="Production" />
+                    <TextBlock Text="This must match the tab your Client ID/Secret came from in the Square dashboard — mixing Sandbox credentials with Production (or vice versa) is the most common cause of 400/401 errors here." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
                     <Button Content="Save App Credentials" Command="{Binding SaveSquareAppCredentialsCommand}" HorizontalAlignment="Left" />
 
                     <TextBlock TextWrapping="Wrap" Style="{StaticResource MutedTextStyle}">
@@ -58,6 +61,9 @@
                     <TextBox Header="Redirect URL" Text="{Binding QuickBooksRedirectUriInput, Mode=TwoWay}"
                              PlaceholderText="https://your-relay.workers.dev/quickbooks/callback" />
                     <TextBlock Text="This must be the deployed oauth-relay URL (see /oauth-relay in the repo) — it also needs to be entered as a Redirect URI in Intuit's developer portal, exactly matching." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+                    <ToggleSwitch Header="Use Sandbox (test company) credentials" IsOn="{Binding QuickBooksUseSandboxInput, Mode=TwoWay}"
+                                  OnContent="Sandbox" OffContent="Production" />
+                    <TextBlock Text="This must match the app/company you're actually connecting to — mixing a Sandbox company with Production credentials (or vice versa) is the most common cause of 400/401 errors here." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
                     <Button Content="Save App Credentials" Command="{Binding SaveQuickBooksAppCredentialsCommand}" HorizontalAlignment="Left" />
 
                     <TextBlock TextWrapping="Wrap" Style="{StaticResource MutedTextStyle}">

@@ -35,6 +35,7 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
     [ObservableProperty] private string squareClientIdInput = string.Empty;
     [ObservableProperty] private string squareClientSecretInput = string.Empty;
     [ObservableProperty] private string squareRedirectUriInput = string.Empty;
+    [ObservableProperty] private bool squareUseSandboxInput = true;
     [ObservableProperty] private bool squareIsConnected;
     [ObservableProperty] private string squareAuthorizationUrl = string.Empty;
     [ObservableProperty] private string squareAuthCodeInput = string.Empty;
@@ -43,6 +44,7 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
     [ObservableProperty] private string quickBooksClientIdInput = string.Empty;
     [ObservableProperty] private string quickBooksClientSecretInput = string.Empty;
     [ObservableProperty] private string quickBooksRedirectUriInput = string.Empty;
+    [ObservableProperty] private bool quickBooksUseSandboxInput = true;
     [ObservableProperty] private bool quickBooksIsConnected;
     [ObservableProperty] private string quickBooksAuthorizationUrl = string.Empty;
     [ObservableProperty] private string quickBooksAuthCodeInput = string.Empty;
@@ -76,10 +78,13 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
         }
         if (!string.IsNullOrWhiteSpace(SquareRedirectUriInput))
             _squareOptions.RedirectUri = SquareRedirectUriInput.Trim();
+        _squareOptions.ApiBaseUrl = SquareUseSandboxInput
+            ? "https://connect.squareupsandbox.com" : "https://connect.squareup.com";
 
         var settings = SettingsService.Load();
         settings.SquareClientId = _squareOptions.ClientId;
         settings.SquareRedirectUri = _squareOptions.RedirectUri;
+        settings.SquareUseSandbox = SquareUseSandboxInput;
         SettingsService.Save(settings);
 
         SquareClientSecretInput = string.Empty;
@@ -99,10 +104,12 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
         }
         if (!string.IsNullOrWhiteSpace(QuickBooksRedirectUriInput))
             _quickBooksOptions.RedirectUri = QuickBooksRedirectUriInput.Trim();
+        _quickBooksOptions.UseSandbox = QuickBooksUseSandboxInput;
 
         var settings = SettingsService.Load();
         settings.QuickBooksClientId = _quickBooksOptions.ClientId;
         settings.QuickBooksRedirectUri = _quickBooksOptions.RedirectUri;
+        settings.QuickBooksUseSandbox = QuickBooksUseSandboxInput;
         SettingsService.Save(settings);
 
         QuickBooksClientSecretInput = string.Empty;
@@ -116,8 +123,10 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
         HasGeminiKey = !string.IsNullOrWhiteSpace(_secureTokenStore.GetSecret(SecretKeys.GeminiApiKey));
         SquareClientIdInput = _squareOptions.ClientId;
         SquareRedirectUriInput = _squareOptions.RedirectUri;
+        SquareUseSandboxInput = _squareOptions.ApiBaseUrl.Contains("squareupsandbox");
         QuickBooksClientIdInput = _quickBooksOptions.ClientId;
         QuickBooksRedirectUriInput = _quickBooksOptions.RedirectUri;
+        QuickBooksUseSandboxInput = _quickBooksOptions.UseSandbox;
 
         await RunBusyAsync(async () =>
         {
@@ -203,8 +212,28 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
 
         await RunBusyAsync(async () =>
         {
-            var accessToken = _secureTokenStore.GetSecret(SecretKeys.SquareAccessToken(ActiveCompanyId))
+            var companyId = ActiveCompanyId;
+            var accessToken = _secureTokenStore.GetSecret(SecretKeys.SquareAccessToken(companyId))
                 ?? throw new InvalidOperationException("No Square access token is stored — reconnect Square.");
+
+            using (var tokenUow = NewUnitOfWork())
+            {
+                var connection = await tokenUow.IntegrationConnections.FirstOrDefaultAsync(
+                    c => c.CompanyId == companyId && c.Provider == IntegrationProvider.Square);
+                if (connection?.TokenExpiresAtUtc is { } expiresAt && expiresAt <= DateTime.UtcNow.AddMinutes(5))
+                {
+                    var refreshToken = _secureTokenStore.GetSecret(SecretKeys.SquareRefreshToken(companyId))
+                        ?? throw new InvalidOperationException("Square's access token expired and no refresh token is stored — reconnect Square.");
+                    var refreshed = await _squareClient.RefreshTokenAsync(refreshToken);
+                    accessToken = refreshed.AccessToken;
+                    _secureTokenStore.SaveSecret(SecretKeys.SquareAccessToken(companyId), accessToken);
+                    if (refreshed.RefreshToken != null)
+                        _secureTokenStore.SaveSecret(SecretKeys.SquareRefreshToken(companyId), refreshed.RefreshToken);
+                    connection.TokenExpiresAtUtc = refreshed.ExpiresAtUtc;
+                    tokenUow.IntegrationConnections.Update(connection);
+                    await tokenUow.SaveChangesAsync();
+                }
+            }
 
             var locations = await _squareClient.GetLocationsAsync(accessToken);
             var location = locations.FirstOrDefault() ?? throw new InvalidOperationException("This Square account has no locations.");
@@ -212,7 +241,6 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
             var payments = await _squareClient.GetPaymentsAsync(accessToken, location.Id, DateTime.UtcNow.AddDays(-30), DateTime.UtcNow);
 
             using var uow = NewUnitOfWork();
-            var companyId = ActiveCompanyId;
             var existingIds = (await uow.BankTransactions.FindAsync(t =>
                 t.BankAccountId == SelectedSquareDepositAccount.Id && t.Source == BankTransactionSource.SquareSync))
                 .Select(t => t.ExternalId).ToHashSet();
