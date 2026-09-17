@@ -2,7 +2,7 @@
     x:Class="MoneyTalk.App.Views.Pages.InvoiceEditPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:dg="using:CommunityToolkit.WinUI.Controls">
+    xmlns:dg="using:CommunityToolkit.WinUI.UI.Controls">
 
     <ScrollViewer Padding="24">
         <StackPanel Spacing="16" MaxWidth="1000">
