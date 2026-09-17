@@ -18,6 +18,7 @@ public class NavigationService : INavigationService
         [PageKeys.InvoiceEdit] = typeof(InvoiceEditPage),
         [PageKeys.Tickets] = typeof(TicketsPage),
         [PageKeys.TicketEdit] = typeof(TicketEditPage),
+        [PageKeys.Pos] = typeof(PosPage),
         [PageKeys.Vendors] = typeof(VendorsPage),
         [PageKeys.Bills] = typeof(BillsPage),
         [PageKeys.BillEdit] = typeof(BillEditPage),
@@ -68,6 +69,7 @@ public static class PageKeys
     public const string InvoiceEdit = "InvoiceEdit";
     public const string Tickets = "Tickets";
     public const string TicketEdit = "TicketEdit";
+    public const string Pos = "Pos";
     public const string Vendors = "Vendors";
     public const string Bills = "Bills";
     public const string BillEdit = "BillEdit";

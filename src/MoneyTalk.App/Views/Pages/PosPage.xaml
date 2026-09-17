@@ -1,0 +1,134 @@
+<Page
+    x:Class="MoneyTalk.App.Views.Pages.PosPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dg="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controls="using:MoneyTalk.App.Controls">
+
+    <Grid Padding="24" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Point of Sale" Style="{StaticResource PageTitleStyle}" Margin="0" />
+        <controls:BusyErrorBar Grid.Row="1" IsBusy="{Binding IsBusy}" ErrorMessage="{Binding ErrorMessage}" />
+
+        <Pivot Grid.Row="2">
+            <PivotItem Header="Sell Items">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0" RowSpacing="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Catalog" Style="{StaticResource SectionHeaderStyle}" Margin="0,16,0,0" />
+                        <GridView Grid.Row="1" ItemsSource="{Binding CatalogItems}" SelectionMode="None"
+                                  IsItemClickEnabled="True" ItemClick="CatalogItem_Click">
+                            <GridView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource CardBorderStyle}" Width="150" Height="80" Padding="12">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" TextWrapping="Wrap" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding SalesPrice}" Style="{StaticResource MutedTextStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </GridView.ItemTemplate>
+                        </GridView>
+                    </Grid>
+
+                    <StackPanel Grid.Column="1" Spacing="12" Padding="0,16,0,0">
+                        <TextBlock Text="Cart" Style="{StaticResource SectionHeaderStyle}" />
+                        <dg:DataGrid ItemsSource="{Binding Cart}" AutoGenerateColumns="False" HeadersVisibility="Column"
+                                     GridLinesVisibility="Horizontal" MinHeight="120" MaxHeight="260" CanUserSortColumns="False">
+                            <dg:DataGrid.Columns>
+                                <dg:DataGridTextColumn Header="Item" Binding="{Binding Description}" Width="2*" />
+                                <dg:DataGridTextColumn Header="Qty" Binding="{Binding Quantity, Mode=TwoWay}" Width="*" />
+                                <dg:DataGridTextColumn Header="Price" Binding="{Binding UnitPrice, Mode=TwoWay}" Width="*" />
+                                <dg:DataGridTemplateColumn Header="" Width="40">
+                                    <dg:DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="✕" Click="RemoveFromCart_Click" Tag="{Binding}" />
+                                        </DataTemplate>
+                                    </dg:DataGridTemplateColumn.CellTemplate>
+                                </dg:DataGridTemplateColumn>
+                            </dg:DataGrid.Columns>
+                        </dg:DataGrid>
+
+                        <TextBlock Style="{StaticResource SectionHeaderStyle}">
+                            <Run Text="Total: " /><Run Text="{Binding SubtotalDisplay}" />
+                        </TextBlock>
+
+                        <ComboBox Header="Customer" ItemsSource="{Binding Customers}" SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
+                                  DisplayMemberPath="Name" PlaceholderText="Walk-in (no customer)" HorizontalAlignment="Stretch" />
+                        <ComboBox Header="Deposit to" ItemsSource="{Binding DepositAccounts}" SelectedItem="{Binding SelectedDepositAccount, Mode=TwoWay}"
+                                  DisplayMemberPath="BankName" HorizontalAlignment="Stretch" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="Cash" Command="{Binding CheckoutCashCommand}" />
+                            <Button Content="Card (Terminal)" Style="{StaticResource AccentButtonStyle}" Command="{Binding ChargeCardCommand}" />
+                            <Button Content="Other" Command="{Binding CheckoutOtherCommand}" />
+                        </StackPanel>
+                        <Button Content="Clear Cart" Command="{Binding ClearCartCommand}" HorizontalAlignment="Left" />
+
+                        <Border Style="{StaticResource CardBorderStyle}" Visibility="{Binding IsPairingTerminal, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Pair Square Terminal" Style="{StaticResource SectionHeaderStyle}" />
+                                <TextBlock Text="{Binding PairingCode}" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" />
+                                <TextBlock Text="{Binding PairingStatusMessage}" Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Content="Check Status" Style="{StaticResource AccentButtonStyle}" Command="{Binding CheckPairingStatusCommand}" />
+                                    <Button Content="Cancel" Command="{Binding CancelPairingCommand}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorderStyle}" Visibility="{Binding IsChargingCard, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Card Charge in Progress" Style="{StaticResource SectionHeaderStyle}" />
+                                <TextBlock Text="{Binding CardStatusMessage}" TextWrapping="Wrap" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Content="Check Status" Style="{StaticResource AccentButtonStyle}" Command="{Binding CheckCardStatusCommand}" />
+                                    <Button Content="Cancel" Command="{Binding CancelCardChargeCommand}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Button Content="Pair Square Terminal" Command="{Binding PairTerminalCommand}" HorizontalAlignment="Left"
+                                Visibility="{Binding HasPairedTerminal, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}" />
+                    </StackPanel>
+                </Grid>
+            </PivotItem>
+
+            <PivotItem Header="Pay Ticket">
+                <StackPanel Spacing="12" Padding="0,16,0,0" MaxWidth="500">
+                    <ComboBox Header="Open Ticket" ItemsSource="{Binding OpenTickets}" SelectedItem="{Binding SelectedTicket, Mode=TwoWay}"
+                              HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="{Binding TicketNumber}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding Device}" />
+                                    <TextBlock Text="{Binding Balance}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <NumberBox Header="Amount" Value="{Binding TicketPaymentAmount, Mode=TwoWay}" Minimum="0" SpinButtonPlacementMode="Compact" />
+                    <ComboBox Header="Deposit to" ItemsSource="{Binding DepositAccounts}" SelectedItem="{Binding SelectedDepositAccount, Mode=TwoWay}"
+                              DisplayMemberPath="BankName" HorizontalAlignment="Stretch" />
+                    <Button Content="Collect Payment" Style="{StaticResource AccentButtonStyle}" Command="{Binding PayTicketCommand}" HorizontalAlignment="Left" />
+                    <TextBlock Text="No open ticket balances." Style="{StaticResource MutedTextStyle}"
+                               Visibility="{Binding OpenTickets.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=Invert}" />
+                </StackPanel>
+            </PivotItem>
+        </Pivot>
+    </Grid>
+</Page>

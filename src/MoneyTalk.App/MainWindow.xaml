@@ -21,6 +21,7 @@
             <NavigationViewItem Content="Customers" Tag="Customers" Icon="ContactInfo" />
             <NavigationViewItem Content="Invoices" Tag="Invoices" Icon="PostUpdate" />
             <NavigationViewItem Content="Repair Tickets" Tag="Tickets" Icon="Repair" />
+            <NavigationViewItem Content="Point of Sale" Tag="Pos" Icon="Shop" />
 
             <NavigationViewItem Content="Vendors" Tag="Vendors" Icon="People" />
             <NavigationViewItem Content="Bills" Tag="Bills" Icon="Document" />

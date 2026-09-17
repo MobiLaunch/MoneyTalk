@@ -88,6 +88,7 @@ public partial class App : Application
         services.AddSingleton<LedgerService>();
         services.AddSingleton<InvoiceService>();
         services.AddSingleton<RepairTicketService>();
+        services.AddSingleton<PosService>();
         services.AddSingleton<BillService>();
         services.AddSingleton<ReconciliationService>();
         services.AddSingleton<ReportingService>();
@@ -133,6 +134,7 @@ public partial class App : Application
         services.AddTransient<InvoiceEditViewModel>();
         services.AddTransient<TicketsViewModel>();
         services.AddTransient<TicketEditViewModel>();
+        services.AddTransient<PosViewModel>();
         services.AddTransient<VendorsViewModel>();
         services.AddTransient<BillsViewModel>();
         services.AddTransient<BillEditViewModel>();

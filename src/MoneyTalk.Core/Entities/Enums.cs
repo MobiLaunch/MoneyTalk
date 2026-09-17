@@ -56,7 +56,8 @@ public enum JournalSourceType
     OpeningBalance,
     RecurringTransaction,
     Adjustment,
-    RepairTicketPayment
+    RepairTicketPayment,
+    PosSale
 }
 
 public enum InvoiceStatus
