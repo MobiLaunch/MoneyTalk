@@ -13,10 +13,13 @@ namespace MoneyTalk.App.ViewModels;
 /// <summary>Manages the three external connections MoneyTalk supports. OAuth here follows the
 /// "paste the authorization code back" pattern rather than an embedded web view or a registered
 /// custom URI scheme: the app opens the provider's consent page in the system browser, and once
-/// the user approves, Square/QuickBooks redirect to a URL the desktop app isn't listening on —
-/// the user copies the <c>code</c> (and, for QuickBooks, <c>realmId</c>) query-string values out
-/// of that URL and pastes them in. It's a few extra clicks, but it needs no packaging identity,
-/// no registry changes, and no background HTTP listener.</summary>
+/// the user approves, Square/QuickBooks redirect to the small "oauth-relay" landing page (see
+/// /oauth-relay in the repo) — the only piece of this app that needs to be reachable on the public
+/// internet, since Square/Intuit require a real HTTPS redirect URL registered in their dashboards
+/// and won't accept a custom URI scheme. That page displays the <c>code</c> (and, for QuickBooks,
+/// <c>realmId</c>) query-string values, which the user copies and pastes in here. It's a few extra
+/// clicks, but it needs no packaging identity, no registry changes, and no background HTTP
+/// listener in the desktop app itself.</summary>
 public partial class IntegrationsSettingsViewModel : ViewModelBase
 {
     private readonly ISecureTokenStore _secureTokenStore;
@@ -31,6 +34,7 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
 
     [ObservableProperty] private string squareClientIdInput = string.Empty;
     [ObservableProperty] private string squareClientSecretInput = string.Empty;
+    [ObservableProperty] private string squareRedirectUriInput = string.Empty;
     [ObservableProperty] private bool squareIsConnected;
     [ObservableProperty] private string squareAuthorizationUrl = string.Empty;
     [ObservableProperty] private string squareAuthCodeInput = string.Empty;
@@ -38,6 +42,7 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
 
     [ObservableProperty] private string quickBooksClientIdInput = string.Empty;
     [ObservableProperty] private string quickBooksClientSecretInput = string.Empty;
+    [ObservableProperty] private string quickBooksRedirectUriInput = string.Empty;
     [ObservableProperty] private bool quickBooksIsConnected;
     [ObservableProperty] private string quickBooksAuthorizationUrl = string.Empty;
     [ObservableProperty] private string quickBooksAuthCodeInput = string.Empty;
@@ -69,9 +74,12 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
             _squareOptions.ClientSecret = SquareClientSecretInput.Trim();
             _secureTokenStore.SaveSecret(SecretKeys.SquareClientSecret, _squareOptions.ClientSecret);
         }
+        if (!string.IsNullOrWhiteSpace(SquareRedirectUriInput))
+            _squareOptions.RedirectUri = SquareRedirectUriInput.Trim();
 
         var settings = SettingsService.Load();
         settings.SquareClientId = _squareOptions.ClientId;
+        settings.SquareRedirectUri = _squareOptions.RedirectUri;
         SettingsService.Save(settings);
 
         SquareClientSecretInput = string.Empty;
@@ -89,9 +97,12 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
             _quickBooksOptions.ClientSecret = QuickBooksClientSecretInput.Trim();
             _secureTokenStore.SaveSecret(SecretKeys.QuickBooksClientSecret, _quickBooksOptions.ClientSecret);
         }
+        if (!string.IsNullOrWhiteSpace(QuickBooksRedirectUriInput))
+            _quickBooksOptions.RedirectUri = QuickBooksRedirectUriInput.Trim();
 
         var settings = SettingsService.Load();
         settings.QuickBooksClientId = _quickBooksOptions.ClientId;
+        settings.QuickBooksRedirectUri = _quickBooksOptions.RedirectUri;
         SettingsService.Save(settings);
 
         QuickBooksClientSecretInput = string.Empty;
@@ -104,7 +115,9 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
     {
         HasGeminiKey = !string.IsNullOrWhiteSpace(_secureTokenStore.GetSecret(SecretKeys.GeminiApiKey));
         SquareClientIdInput = _squareOptions.ClientId;
+        SquareRedirectUriInput = _squareOptions.RedirectUri;
         QuickBooksClientIdInput = _quickBooksOptions.ClientId;
+        QuickBooksRedirectUriInput = _quickBooksOptions.RedirectUri;
 
         await RunBusyAsync(async () =>
         {

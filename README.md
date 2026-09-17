@@ -51,8 +51,11 @@ MoneyTalk.sln
 │   ├── MoneyTalk.Integrations.QuickBooks QuickBooks Online Accounting API client (OAuth, query, invoice push)
 │   ├── MoneyTalk.Integrations.Gemini     Google Gemini generateContent API client
 │   └── MoneyTalk.App                     WinUI 3 app: MVVM (CommunityToolkit.Mvvm), NavigationView shell, DI via Microsoft.Extensions.Hosting
-└── tests/
-    └── MoneyTalk.Tests                   xUnit tests for the accounting engine, run against a real per-test SQLite database
+├── tests/
+│   └── MoneyTalk.Tests                   xUnit tests for the accounting engine, run against a real per-test SQLite database
+└── oauth-relay/                          Tiny stateless Cloudflare Worker — the only piece of this
+                                           project that runs on the public internet, needed only to
+                                           catch the Square/QuickBooks OAuth redirect (see below)
 ```
 
 **Why this split:** `MoneyTalk.Core` has zero dependency on EF Core, WinUI, or any specific
@@ -148,28 +151,51 @@ zero integrations connected.
 1. Get a free API key at https://aistudio.google.com/apikey
 2. Integrations page → paste it under "Gemini AI Advisor" → Save Key
 
+### Square and QuickBooks Online — one-time OAuth relay setup
+
+Square and Intuit both require a real, publicly reachable **HTTPS** redirect URL registered in
+their developer dashboards ahead of time; neither accepts a custom URI scheme, and Intuit only
+allows `http://localhost` for sandbox testing, never production. Since MoneyTalk is a desktop app
+with no HTTPS endpoint of its own, deploy the tiny relay in `/oauth-relay` once — it's stateless,
+holds no secrets, and costs nothing on Cloudflare's free tier:
+
+```powershell
+cd oauth-relay
+npm install -g wrangler
+wrangler login
+wrangler deploy
+```
+
+This prints a URL like `https://moneytalk-oauth-relay.<subdomain>.workers.dev`. Full details in
+[`oauth-relay/README.md`](oauth-relay/README.md).
+
 ### Square
 1. Create an app at https://developer.squareup.com/apps and note its Client ID/Secret
-2. Integrations page → paste the Client ID/Secret under "Square" → Save App Credentials (the
-   secret goes straight into the DPAPI-encrypted store, never to `settings.json`)
-3. "Open Square Authorization" → approve in the browser → copy the `code` query-string value
-   from the redirect URL → paste it back → Connect
-4. Pick a deposit bank account and hit "Sync Last 30 Days of Payments" to pull Square sales into
+2. In the same dashboard, set the Redirect URL to `<your relay URL>/square/callback`
+3. Integrations page → paste the Client ID/Secret and that same Redirect URL under "Square" →
+   Save App Credentials (the secret goes straight into the DPAPI-encrypted store, never to
+   `settings.json`)
+4. "Open Square Authorization" → approve in the browser → the relay page displays an
+   authorization code → copy it and paste it back → Connect
+5. Pick a deposit bank account and hit "Sync Last 30 Days of Payments" to pull Square sales into
    bank transactions ready for reconciliation
 
 ### QuickBooks Online
-Same shape as Square: register an app at https://developer.intuit.com, paste its Client
-ID/Secret and save, then connect via the paste-the-authorization-code flow (QuickBooks also
-requires the `realmId` from the redirect URL). `IQuickBooksClient` (already wired into DI) can
-then import accounts/customers/invoices or push MoneyTalk invoices out.
+Same shape as Square: register an app at https://developer.intuit.com, set its Redirect URI to
+`<your relay URL>/quickbooks/callback`, paste the Client ID/Secret and Redirect URL into
+MoneyTalk and save, then connect via the paste-the-authorization-code flow (QuickBooks also
+requires the `realmId`, which the relay page also displays). `IQuickBooksClient` (already wired
+into DI) can then import accounts/customers/invoices or push MoneyTalk invoices out.
 
 Both OAuth flows use "open in system browser, paste the code back" rather than an embedded web
-view or a registered custom URI scheme — it's a couple of extra clicks, but it needs no
-packaging identity, no Windows registry changes, and no background HTTP listener running on the
-desktop.
+view or Windows registry changes — the actual code-for-token exchange still happens directly
+from the desktop app using the Client ID/Secret you entered, and the relay never sees them.
 
 ## Security notes
-- No telemetry, no cloud sync, no backend server — this is a local-first app
+- No telemetry, no cloud sync, no backend server for your data — this is a local-first app. The
+  only internet-facing piece anywhere in this project is the stateless OAuth relay in
+  `/oauth-relay`, which exists solely because Square/Intuit require a real HTTPS redirect URL; it
+  never stores data, never sees a client secret, and never touches your books
 - Square/QuickBooks OAuth tokens and the Gemini API key live in a DPAPI-encrypted file scoped to
   the current Windows user account; they are never written to the SQLite database or to
   `settings.json`

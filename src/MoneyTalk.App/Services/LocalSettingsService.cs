@@ -10,11 +10,18 @@ public class AppSettings
     public Guid? ActiveCompanyId { get; set; }
 
     public string SquareClientId { get; set; } = string.Empty;
-    public string SquareRedirectUri { get; set; } = "moneytalk://oauth/square";
+
+    /// <summary>Must be the deployed oauth-relay's <c>/square/callback</c> URL (see /oauth-relay
+    /// in the repo) — Square requires a real HTTPS redirect URL registered in its dashboard and
+    /// won't accept a custom URI scheme. Left blank until the user configures it in Settings.</summary>
+    public string SquareRedirectUri { get; set; } = string.Empty;
     public bool SquareUseSandbox { get; set; } = true;
 
     public string QuickBooksClientId { get; set; } = string.Empty;
-    public string QuickBooksRedirectUri { get; set; } = "moneytalk://oauth/quickbooks";
+
+    /// <summary>Must be the deployed oauth-relay's <c>/quickbooks/callback</c> URL — same
+    /// reasoning as <see cref="SquareRedirectUri"/>. Intuit only allows localhost for sandbox.</summary>
+    public string QuickBooksRedirectUri { get; set; } = string.Empty;
     public bool QuickBooksUseSandbox { get; set; } = true;
 
     public string GeminiModelId { get; set; } = "gemini-2.0-flash";

@@ -27,11 +27,14 @@
                     <TextBlock Text="Register a free app at developer.squareup.com/apps, then paste its Client ID/Secret here." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
                     <TextBox Header="Client ID" Text="{Binding SquareClientIdInput, Mode=TwoWay}" />
                     <PasswordBox Header="Client secret" Password="{Binding SquareClientSecretInput, Mode=TwoWay}" />
+                    <TextBox Header="Redirect URL" Text="{Binding SquareRedirectUriInput, Mode=TwoWay}"
+                             PlaceholderText="https://your-relay.workers.dev/square/callback" />
+                    <TextBlock Text="This must be the deployed oauth-relay URL (see /oauth-relay in the repo) — it also needs to be entered as the Redirect URL in Square's dashboard, exactly matching." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
                     <Button Content="Save App Credentials" Command="{Binding SaveSquareAppCredentialsCommand}" HorizontalAlignment="Left" />
 
                     <TextBlock TextWrapping="Wrap" Style="{StaticResource MutedTextStyle}">
                         1. Click "Open Square Authorization" — approve access in your browser.
-                        2. Copy the "code" value from the address bar you land on afterward.
+                        2. Copy the authorization code the relay page displays.
                         3. Paste it below and click Connect.
                     </TextBlock>
                     <Button Content="Open Square Authorization" Click="OpenSquareAuth_Click" HorizontalAlignment="Left" />
@@ -52,11 +55,14 @@
                     <TextBlock Text="Register a free app at developer.intuit.com, then paste its Client ID/Secret here." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
                     <TextBox Header="Client ID" Text="{Binding QuickBooksClientIdInput, Mode=TwoWay}" />
                     <PasswordBox Header="Client secret" Password="{Binding QuickBooksClientSecretInput, Mode=TwoWay}" />
+                    <TextBox Header="Redirect URL" Text="{Binding QuickBooksRedirectUriInput, Mode=TwoWay}"
+                             PlaceholderText="https://your-relay.workers.dev/quickbooks/callback" />
+                    <TextBlock Text="This must be the deployed oauth-relay URL (see /oauth-relay in the repo) — it also needs to be entered as a Redirect URI in Intuit's developer portal, exactly matching." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
                     <Button Content="Save App Credentials" Command="{Binding SaveQuickBooksAppCredentialsCommand}" HorizontalAlignment="Left" />
 
                     <TextBlock TextWrapping="Wrap" Style="{StaticResource MutedTextStyle}">
                         1. Click "Open QuickBooks Authorization" — sign in and approve access.
-                        2. Copy the "code" and "realmId" values from the address bar you land on afterward.
+                        2. Copy the authorization code and realm id the relay page displays.
                         3. Paste both below and click Connect.
                     </TextBlock>
                     <Button Content="Open QuickBooks Authorization" Click="OpenQuickBooksAuth_Click" HorizontalAlignment="Left" />
