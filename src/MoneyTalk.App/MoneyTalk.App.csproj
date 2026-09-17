@@ -45,7 +45,7 @@
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     <!-- Barcode/QR label generation (pixel-data encoder only — no System.Drawing dependency on
          this side; that's added separately below just for GDI+ receipt/label printing). -->
-    <PackageReference Include="ZXing.Net" Version="0.16.9" />
+    <PackageReference Include="ZXing.Net" Version="0.16.11" />
     <!-- Windows-only GDI+ printing (System.Drawing.Printing.PrintDocument) for receipts and
          labels — deliberately used instead of the WinRT Windows.Graphics.Printing/PrintManager
          stack. That stack requires PrintManagerInterop.GetForWindow/ShowPrintUIForWindowAsync,

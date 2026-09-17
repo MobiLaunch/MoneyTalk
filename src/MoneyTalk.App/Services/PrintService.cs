@@ -2,7 +2,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Printing;
 using System.Runtime.InteropServices;
-using ZXing;
+using ZXing.Rendering;
 
 namespace MoneyTalk.App.Services;
 

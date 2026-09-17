@@ -2,6 +2,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Xaml.Media.Imaging;
 using ZXing;
 using ZXing.Common;
+using ZXing.Rendering;
 
 namespace MoneyTalk.App.Services;
 
@@ -30,8 +31,11 @@ public static class BarcodeService
     public static WriteableBitmap ToWriteableBitmap(PixelData pixelData)
     {
         var bitmap = new WriteableBitmap(pixelData.Width, pixelData.Height);
-        using var stream = bitmap.PixelBuffer.AsStream();
-        stream.Write(pixelData.Pixels, 0, pixelData.Pixels.Length);
+        using (var stream = bitmap.PixelBuffer.AsStream())
+        {
+            stream.Write(pixelData.Pixels, 0, pixelData.Pixels.Length);
+        }
+        bitmap.Invalidate();
         return bitmap;
     }
 }
