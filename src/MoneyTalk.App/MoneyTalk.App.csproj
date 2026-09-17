@@ -32,8 +32,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- No direct Microsoft.Windows.SDK.BuildTools reference: nothing in this project calls it
+         directly (it's a build-time WinRT-projection dependency), and pinning our own version
+         here fights with whatever floor Microsoft.WindowsAppSDK's own transitive dependency
+         chain requires — NuGet treats that mismatch as a hard downgrade error (NU1605). Let
+         Microsoft.WindowsAppSDK pull in the version it needs. -->
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
