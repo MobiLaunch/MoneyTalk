@@ -28,7 +28,7 @@ public class AppSettings
     /// reused across sessions so the shop doesn't have to re-pair every launch.</summary>
     public string SquareTerminalDeviceId { get; set; } = string.Empty;
 
-    public string GeminiModelId { get; set; } = "gemini-2.0-flash";
+    public string GeminiModelId { get; set; } = "gemini-2.5-flash";
 
     public bool HasCompletedOnboarding { get; set; }
 

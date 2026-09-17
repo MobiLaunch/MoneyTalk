@@ -16,6 +16,11 @@
                     <TextBlock Text="✓ A Gemini API key is saved." Foreground="{StaticResource MoneyTalkPositiveBrush}" Visibility="{Binding HasGeminiKey, Converter={StaticResource BoolToVisibilityConverter}}" />
                     <PasswordBox Header="Gemini API key" Password="{Binding GeminiApiKeyInput, Mode=TwoWay}" />
                     <Button Content="Save Key" Style="{StaticResource AccentButtonStyle}" Command="{Binding SaveGeminiKeyCommand}" HorizontalAlignment="Left" />
+
+                    <TextBox Header="Model" Text="{Binding GeminiModelIdInput, Mode=TwoWay}" PlaceholderText="gemini-2.5-flash" />
+                    <TextBlock Text="Google periodically retires/renames Gemini models. If the AI Assistant starts failing with a 404 'model no longer available' error, check aistudio.google.com for the current model id and paste it here." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+                    <Button Content="Save Model" Command="{Binding SaveGeminiModelCommand}" HorizontalAlignment="Left" />
+
                     <TextBlock Text="{Binding GeminiStatusMessage}" Style="{StaticResource MutedTextStyle}" />
                 </StackPanel>
             </Border>

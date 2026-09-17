@@ -6,6 +6,7 @@ using MoneyTalk.Core.Accounting;
 using MoneyTalk.Core.Entities;
 using MoneyTalk.Core.Interfaces;
 using MoneyTalk.Core.Interfaces.Integrations;
+using MoneyTalk.Integrations.Gemini;
 using MoneyTalk.Integrations.QuickBooks;
 using MoneyTalk.Integrations.Square;
 
@@ -30,9 +31,11 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
     private readonly QuickBooksOptions _quickBooksOptions;
     private readonly EmailOptions _emailOptions;
     private readonly EmailService _emailService;
+    private readonly GeminiOptions _geminiOptions;
 
     [ObservableProperty] private string geminiApiKeyInput = string.Empty;
     [ObservableProperty] private bool hasGeminiKey;
+    [ObservableProperty] private string geminiModelIdInput = string.Empty;
     [ObservableProperty] private string geminiStatusMessage = string.Empty;
 
     [ObservableProperty] private string squareClientIdInput = string.Empty;
@@ -77,7 +80,8 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
     public IntegrationsSettingsViewModel(
         Func<IUnitOfWork> unitOfWorkFactory, LocalSettingsService settingsService,
         ISecureTokenStore secureTokenStore, ISquareClient squareClient, IQuickBooksClient quickBooksClient,
-        SquareOptions squareOptions, QuickBooksOptions quickBooksOptions, EmailOptions emailOptions, EmailService emailService)
+        SquareOptions squareOptions, QuickBooksOptions quickBooksOptions, EmailOptions emailOptions, EmailService emailService,
+        GeminiOptions geminiOptions)
         : base(unitOfWorkFactory, settingsService)
     {
         _secureTokenStore = secureTokenStore;
@@ -87,6 +91,7 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
         _quickBooksOptions = quickBooksOptions;
         _emailOptions = emailOptions;
         _emailService = emailService;
+        _geminiOptions = geminiOptions;
     }
 
     [RelayCommand]
@@ -143,6 +148,7 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
     public async Task LoadAsync()
     {
         HasGeminiKey = !string.IsNullOrWhiteSpace(_secureTokenStore.GetSecret(SecretKeys.GeminiApiKey));
+        GeminiModelIdInput = _geminiOptions.ModelId;
         SquareClientIdInput = _squareOptions.ClientId;
         SquareRedirectUriInput = _squareOptions.RedirectUri;
         SquareUseSandboxInput = _squareOptions.ApiBaseUrl.Contains("squareupsandbox");
@@ -190,6 +196,27 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
         GeminiApiKeyInput = string.Empty;
         HasGeminiKey = true;
         GeminiStatusMessage = "Gemini API key saved.";
+    }
+
+    /// <summary>Google has retired/renamed the Gemini flash-tier model several times in a single
+    /// year — when a call starts failing with a 404 "model no longer available", this lets you
+    /// fix it here instead of waiting on an app update.</summary>
+    [RelayCommand]
+    private void SaveGeminiModel()
+    {
+        if (string.IsNullOrWhiteSpace(GeminiModelIdInput))
+        {
+            GeminiStatusMessage = "Enter a model id first.";
+            return;
+        }
+
+        _geminiOptions.ModelId = GeminiModelIdInput.Trim();
+
+        var settings = SettingsService.Load();
+        settings.GeminiModelId = _geminiOptions.ModelId;
+        SettingsService.Save(settings);
+
+        GeminiStatusMessage = $"Gemini model set to {_geminiOptions.ModelId}.";
     }
 
     [RelayCommand]
