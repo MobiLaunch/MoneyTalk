@@ -21,6 +21,7 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                     <Button Content="New Invoice" Command="{Binding GoToInvoicesCommand}" />
                     <Button Content="New Bill" Command="{Binding GoToBillsCommand}" />
+                    <Button Content="Repair Tickets" Command="{Binding GoToTicketsCommand}" />
                     <Button Content="Ask AI Advisor" Style="{StaticResource AccentButtonStyle}" Command="{Binding GoToAiAssistantCommand}" />
                 </StackPanel>
             </Grid>
@@ -38,6 +39,9 @@
                     <controls:KpiCard LabelText="Accounts Receivable" ValueText="{Binding TotalArDisplay}" SubText="{Binding OverdueInvoicesSubText}" AccentBrush="{StaticResource MoneyTalkAccentBrush}" />
                     <controls:KpiCard LabelText="Accounts Payable" ValueText="{Binding TotalApDisplay}" SubText="{Binding OverdueBillsSubText}" AccentBrush="{StaticResource MoneyTalkWarningBrush}" />
                     <controls:KpiCard LabelText="Net Income (MTD)" ValueText="{Binding NetIncomeDisplay}" SubText="Income minus expenses this month" AccentBrush="{StaticResource MoneyTalkAccentBrush}" />
+                    <controls:KpiCard LabelText="Idle Tickets" ValueText="{Binding OpenTicketsCountDisplay}" SubText="{Binding OpenTicketsSubText}" AccentBrush="{StaticResource MoneyTalkWarningBrush}" />
+                    <controls:KpiCard LabelText="Warranty Alerts" ValueText="{Binding WarrantyExpiringCountDisplay}" SubText="{Binding WarrantyExpiringSubText}" AccentBrush="{StaticResource MoneyTalkAccentBrush}" />
+                    <controls:KpiCard LabelText="Avg. Repair Time" ValueText="{Binding AverageRepairTimeDisplay}" SubText="From intake to completed/delivered" AccentBrush="{StaticResource MoneyTalkAccentBrush}" />
                 </ItemsControl.Items>
             </ItemsControl>
 
@@ -69,6 +73,31 @@
                     </StackPanel>
                 </Border>
             </Grid>
+
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Revenue by Device (Last 30 Days)" Style="{StaticResource SectionHeaderStyle}" />
+                    <ItemsControl ItemsSource="{Binding RevenueByDevice}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Device}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="{Binding TicketCount}" Style="{StaticResource MutedTextStyle}" />
+                                        <TextBlock Text="{Binding Revenue}" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="No repair revenue in the last 30 days." Style="{StaticResource MutedTextStyle}"
+                               Visibility="{Binding RevenueByDevice.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=Invert}" />
+                </StackPanel>
+            </Border>
 
             <StackPanel Spacing="8">
                 <TextBlock Text="AI Insights" Style="{StaticResource SectionHeaderStyle}" />

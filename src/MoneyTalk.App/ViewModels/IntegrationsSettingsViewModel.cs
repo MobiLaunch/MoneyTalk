@@ -54,6 +54,13 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
     public ObservableCollection<BankAccount> BankAccounts { get; } = new();
     [ObservableProperty] private BankAccount? selectedSquareDepositAccount;
 
+    [ObservableProperty] private string squareTotalRevenueDisplay = "—";
+    [ObservableProperty] private string squareTotalTipsDisplay = "—";
+    [ObservableProperty] private string squareTotalFeesDisplay = "—";
+    [ObservableProperty] private string squareNetRevenueDisplay = "—";
+    [ObservableProperty] private string squareTotalPayoutsDisplay = "—";
+    [ObservableProperty] private string squareOrdersCountDisplay = "—";
+
     public IntegrationsSettingsViewModel(
         Func<IUnitOfWork> unitOfWorkFactory, LocalSettingsService settingsService,
         ISecureTokenStore secureTokenStore, ISquareClient squareClient, IQuickBooksClient quickBooksClient,
@@ -264,6 +271,46 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
             await uow.SaveChangesAsync();
 
             SquareStatusMessage = $"Synced {imported} new Square payment(s) into {SelectedSquareDepositAccount.BankName}.";
+        });
+    }
+
+    /// <summary>Pulls last-30-days Payments/Orders/Payouts and rolls them into the same summary
+    /// figures NovaOps's Square analytics tab shows (total revenue, tips, fees, net revenue,
+    /// payouts) — this is the "Square Payments/Orders/Payouts view" the full API surface added in
+    /// the Square integration pass exists to support.</summary>
+    [RelayCommand]
+    private async Task LoadSquareActivityAsync()
+    {
+        if (!SquareIsConnected) { SquareStatusMessage = "Connect Square first."; return; }
+
+        await RunBusyAsync(async () =>
+        {
+            var companyId = ActiveCompanyId;
+            var accessToken = _secureTokenStore.GetSecret(SecretKeys.SquareAccessToken(companyId))
+                ?? throw new InvalidOperationException("No Square access token is stored — reconnect Square.");
+
+            var locations = await _squareClient.GetLocationsAsync(accessToken);
+            var location = locations.FirstOrDefault() ?? throw new InvalidOperationException("This Square account has no locations.");
+
+            var since = DateTime.UtcNow.AddDays(-30);
+            var payments = await _squareClient.GetPaymentsAsync(accessToken, location.Id, since, DateTime.UtcNow);
+            var orders = await _squareClient.SearchOrdersAsync(accessToken, location.Id, since, DateTime.UtcNow);
+            var payouts = await _squareClient.GetPayoutsAsync(accessToken, location.Id, since, DateTime.UtcNow);
+
+            var completedPayments = payments.Where(p => p.Status == "COMPLETED").ToList();
+            var totalRevenue = completedPayments.Sum(p => p.AmountMoney);
+            var totalTips = completedPayments.Sum(p => p.TipMoney ?? 0);
+            var totalFees = completedPayments.Sum(p => Math.Abs(p.ProcessingFeeMoney ?? 0));
+            var totalPayouts = payouts.Where(p => p.Status == "PAID").Sum(p => p.AmountMoney);
+
+            SquareTotalRevenueDisplay = totalRevenue.ToString("C2");
+            SquareTotalTipsDisplay = totalTips.ToString("C2");
+            SquareTotalFeesDisplay = totalFees.ToString("C2");
+            SquareNetRevenueDisplay = (totalRevenue - totalFees).ToString("C2");
+            SquareTotalPayoutsDisplay = totalPayouts.ToString("C2");
+            SquareOrdersCountDisplay = orders.Count.ToString();
+
+            SquareStatusMessage = $"Loaded the last 30 days of Square activity ({completedPayments.Count} payment(s), {orders.Count} order(s)).";
         });
     }
 

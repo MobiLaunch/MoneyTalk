@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MoneyTalk.App.Services;
 using MoneyTalk.Core.Accounting;
+using MoneyTalk.Core.Dtos;
 using MoneyTalk.Core.Entities;
 using MoneyTalk.Core.Interfaces;
 
@@ -26,7 +27,14 @@ public partial class DashboardViewModel : ViewModelBase
     [ObservableProperty] private string overdueBillsSubText = "No overdue bills";
     [ObservableProperty] private IReadOnlyList<double> cashTrendValues = Array.Empty<double>();
 
+    [ObservableProperty] private string openTicketsCountDisplay = "0";
+    [ObservableProperty] private string openTicketsSubText = "No tickets idle";
+    [ObservableProperty] private string warrantyExpiringCountDisplay = "0";
+    [ObservableProperty] private string warrantyExpiringSubText = "None expiring soon";
+    [ObservableProperty] private string averageRepairTimeDisplay = "—";
+
     public ObservableCollection<AiInsight> Insights { get; } = new();
+    public ObservableCollection<DeviceRevenueLine> RevenueByDevice { get; } = new();
 
     public DashboardViewModel(
         Func<IUnitOfWork> unitOfWorkFactory,
@@ -78,6 +86,23 @@ public partial class DashboardViewModel : ViewModelBase
 
             CashTrendValues = summary.CashTrend.Select(p => (double)p.Balance).ToList();
 
+            var repairShop = summary.RepairShop;
+            var totalIdle = repairShop.TicketsIdleAmberCount + repairShop.TicketsIdleRedCount;
+            OpenTicketsCountDisplay = totalIdle.ToString();
+            OpenTicketsSubText = totalIdle == 0
+                ? "No tickets idle"
+                : $"{repairShop.TicketsIdleAmberCount} idle 3+ days · {repairShop.TicketsIdleRedCount} idle 7+ days";
+            WarrantyExpiringCountDisplay = repairShop.WarrantyExpiringSoonCount.ToString();
+            WarrantyExpiringSubText = repairShop.WarrantyExpiringSoonCount == 0
+                ? "None expiring soon"
+                : "Within the next 14 days";
+            AverageRepairTimeDisplay = repairShop.AverageRepairTimeDays.HasValue
+                ? $"{repairShop.AverageRepairTimeDays.Value:0.#} days"
+                : "—";
+
+            RevenueByDevice.Clear();
+            foreach (var line in repairShop.RevenueByDeviceLast30Days) RevenueByDevice.Add(line);
+
             var insights = await _dashboardService.GenerateInsightsAsync(uow, companyId, today);
             Insights.Clear();
             foreach (var insight in insights.OrderByDescending(i => i.Severity))
@@ -90,6 +115,9 @@ public partial class DashboardViewModel : ViewModelBase
 
     [RelayCommand]
     private void GoToBills() => _navigationService.NavigateTo(PageKeys.Bills);
+
+    [RelayCommand]
+    private void GoToTickets() => _navigationService.NavigateTo(PageKeys.Tickets);
 
     [RelayCommand]
     private void GoToAiAssistant() => _navigationService.NavigateTo(PageKeys.AiAssistant);

@@ -48,6 +48,45 @@
                               SelectedItem="{Binding SelectedSquareDepositAccount, Mode=TwoWay}" DisplayMemberPath="BankName" HorizontalAlignment="Stretch" />
                     <Button Content="Sync Last 30 Days of Payments" Command="{Binding SyncSquareCommand}" HorizontalAlignment="Left" />
                     <TextBlock Text="{Binding SquareStatusMessage}" Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+
+                    <TextBlock Text="Activity (Last 30 Days)" Style="{StaticResource SectionHeaderStyle}" />
+                    <Button Content="Load Square Activity" Command="{Binding LoadSquareActivityCommand}" HorizontalAlignment="Left"
+                            Visibility="{Binding SquareIsConnected, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Grid ColumnSpacing="16" RowSpacing="6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Grid.Column="0">
+                            <TextBlock Text="Revenue" Style="{StaticResource MutedTextStyle}" />
+                            <TextBlock Text="{Binding SquareTotalRevenueDisplay}" FontWeight="SemiBold" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="1">
+                            <TextBlock Text="Tips" Style="{StaticResource MutedTextStyle}" />
+                            <TextBlock Text="{Binding SquareTotalTipsDisplay}" FontWeight="SemiBold" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="2">
+                            <TextBlock Text="Processing Fees" Style="{StaticResource MutedTextStyle}" />
+                            <TextBlock Text="{Binding SquareTotalFeesDisplay}" FontWeight="SemiBold" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="0">
+                            <TextBlock Text="Net Revenue" Style="{StaticResource MutedTextStyle}" />
+                            <TextBlock Text="{Binding SquareNetRevenueDisplay}" FontWeight="SemiBold" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="1">
+                            <TextBlock Text="Payouts" Style="{StaticResource MutedTextStyle}" />
+                            <TextBlock Text="{Binding SquareTotalPayoutsDisplay}" FontWeight="SemiBold" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="2">
+                            <TextBlock Text="Orders" Style="{StaticResource MutedTextStyle}" />
+                            <TextBlock Text="{Binding SquareOrdersCountDisplay}" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Grid>
                 </StackPanel>
             </Border>
 

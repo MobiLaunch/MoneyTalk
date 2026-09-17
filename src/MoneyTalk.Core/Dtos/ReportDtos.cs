@@ -102,6 +102,24 @@ public class DashboardSummary
     public int OverdueBillCount { get; set; }
     public decimal OverdueBillTotal { get; set; }
     public List<(DateTime Date, decimal Balance)> CashTrend { get; set; } = new();
+    public RepairShopKpis RepairShop { get; set; } = new();
+}
+
+public record DeviceRevenueLine(string Device, decimal Revenue, int TicketCount);
+
+/// <summary>Repair-shop-specific KPIs layered onto the same Dashboard rather than a second
+/// analytics page. "Idle" ticket age and warranty countdowns match NovaOps's own dashboard
+/// thresholds (amber at 3+ days, red at 7+ days, warranty alert at 14 days out). A ticket counts
+/// as idle unless its Status is "Completed" or "Delivered" — the two terminal statuses in the
+/// default <c>Company.TicketStatuses</c> list; a shop that renames its terminal statuses should
+/// keep one of these two names, or idle counts will over-count finished tickets.</summary>
+public class RepairShopKpis
+{
+    public int TicketsIdleAmberCount { get; set; }
+    public int TicketsIdleRedCount { get; set; }
+    public int WarrantyExpiringSoonCount { get; set; }
+    public decimal? AverageRepairTimeDays { get; set; }
+    public List<DeviceRevenueLine> RevenueByDeviceLast30Days { get; set; } = new();
 }
 
 public class BudgetVsActualLine

@@ -44,7 +44,44 @@ public class DashboardService
         var forecast = await new CashFlowForecastService().ForecastAsync(uow, companyId, 30, ct);
         summary.CashTrend = forecast.Points.Select(p => (p.Date, p.ProjectedBalance)).ToList();
 
+        summary.RepairShop = await GetRepairShopKpisAsync(uow, companyId, asOf, ct);
+
         return summary;
+    }
+
+    /// <summary>Ticket-age, warranty, and device-revenue KPIs — see the doc comment on
+    /// <see cref="RepairShopKpis"/> for how "idle"/terminal status is determined.</summary>
+    private static async Task<RepairShopKpis> GetRepairShopKpisAsync(IUnitOfWork uow, Guid companyId, DateTime asOf, CancellationToken ct)
+    {
+        var tickets = await uow.RepairTickets.FindAsync(t => t.CompanyId == companyId, ct);
+        var kpis = new RepairShopKpis();
+
+        bool IsTerminal(RepairTicket t) => t.Status is "Completed" or "Delivered";
+
+        foreach (var ticket in tickets.Where(t => !IsTerminal(t)))
+        {
+            var ageDays = (asOf.Date - ticket.CreatedAtUtc.Date).TotalDays;
+            if (ageDays >= 7) kpis.TicketsIdleRedCount++;
+            else if (ageDays >= 3) kpis.TicketsIdleAmberCount++;
+        }
+
+        kpis.WarrantyExpiringSoonCount = tickets.Count(t =>
+            t.WarrantyEndDate.HasValue && t.WarrantyEndDate.Value >= asOf && (t.WarrantyEndDate.Value - asOf).TotalDays <= 14);
+
+        var completedTickets = tickets.Where(IsTerminal).ToList();
+        kpis.AverageRepairTimeDays = completedTickets.Count == 0
+            ? null
+            : Math.Round((decimal)completedTickets.Average(t => (t.ModifiedAtUtc - t.CreatedAtUtc).TotalDays), 1);
+
+        var windowStart = asOf.AddDays(-30);
+        kpis.RevenueByDeviceLast30Days = tickets
+            .Where(t => t.CreatedAtUtc >= windowStart && t.AmountPaid > 0)
+            .GroupBy(t => t.Device)
+            .Select(g => new DeviceRevenueLine(g.Key, g.Sum(t => t.AmountPaid), g.Count()))
+            .OrderByDescending(l => l.Revenue)
+            .ToList();
+
+        return kpis;
     }
 
     /// <summary>Cheap, deterministic rule-based insights computed locally (no AI call). These
@@ -109,6 +146,28 @@ public class DashboardService
                 CompanyId = companyId,
                 Title = "Operating at a loss this month",
                 Detail = $"Month-to-date expenses ({summary.MonthToDateExpenses:C}) exceed income ({summary.MonthToDateIncome:C}).",
+                Severity = InsightSeverity.Info
+            });
+        }
+
+        if (summary.RepairShop.TicketsIdleRedCount > 0)
+        {
+            insights.Add(new AiInsight
+            {
+                CompanyId = companyId,
+                Title = $"{summary.RepairShop.TicketsIdleRedCount} ticket(s) have been idle 7+ days",
+                Detail = "These open repair tickets haven't been touched in a week or more — worth a status check-in with the customer.",
+                Severity = InsightSeverity.Warning
+            });
+        }
+
+        if (summary.RepairShop.WarrantyExpiringSoonCount > 0)
+        {
+            insights.Add(new AiInsight
+            {
+                CompanyId = companyId,
+                Title = $"{summary.RepairShop.WarrantyExpiringSoonCount} repair warranty(s) expiring within 14 days",
+                Detail = "Consider a follow-up with these customers before their repair warranty lapses.",
                 Severity = InsightSeverity.Info
             });
         }
