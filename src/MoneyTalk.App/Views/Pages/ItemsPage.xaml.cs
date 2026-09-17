@@ -101,4 +101,15 @@ public sealed partial class ItemsPage : Page
     {
         if (sender is Button { Tag: Item item }) ViewModel.PrintLabel(item);
     }
+
+    private async void ExportCsv_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var headers = new[] { "SKU", "Name", "Type", "Sales Price", "Cost", "Qty On Hand", "Reorder Point", "Active" };
+        var rows = ViewModel.Items.Select(i => new[]
+        {
+            i.Sku, i.Name, i.Type.ToString(), i.SalesPrice.ToString("F2"), i.Cost.ToString("F2"),
+            i.QuantityOnHand.ToString("F2"), i.ReorderPoint.ToString("F2"), i.IsActive.ToString()
+        });
+        await Services.CsvExportService.SaveAsync(App.MainWindow, "items.csv", Services.CsvExportService.ToCsv(headers, rows));
+    }
 }

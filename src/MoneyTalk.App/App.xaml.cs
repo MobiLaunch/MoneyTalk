@@ -91,6 +91,7 @@ public partial class App : Application
         services.AddSingleton<PosService>();
         services.AddSingleton<TradeInPriceLookupService>(sp => new TradeInPriceLookupService(
             sp.GetRequiredService<IHttpClientFactory>().CreateClient(), sp.GetRequiredService<IGeminiClient>()));
+        services.AddSingleton<IFixitClient>(sp => new IFixitClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient()));
         services.AddSingleton<BillService>();
         services.AddSingleton<ReconciliationService>();
         services.AddSingleton<ReportingService>();
@@ -118,6 +119,17 @@ public partial class App : Application
             UseSandbox = settings.QuickBooksUseSandbox
         });
         services.AddSingleton(new GeminiOptions { ModelId = settings.GeminiModelId });
+        services.AddSingleton(new EmailOptions
+        {
+            Host = settings.EmailHost,
+            Port = settings.EmailPort,
+            Username = settings.EmailUsername,
+            Password = secureTokenStore.GetSecret(SecretKeys.EmailPassword) ?? string.Empty,
+            UseSsl = settings.EmailUseSsl,
+            FromAddress = settings.EmailFromAddress,
+            FromName = settings.EmailFromName
+        });
+        services.AddSingleton<EmailService>();
 
         services.AddSingleton<ISquareClient>(sp => new SquareClient(
             sp.GetRequiredService<IHttpClientFactory>().CreateClient(), sp.GetRequiredService<SquareOptions>()));

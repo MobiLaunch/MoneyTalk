@@ -118,6 +118,33 @@
                 </StackPanel>
             </Border>
 
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Email Notifications" Style="{StaticResource SectionHeaderStyle}" />
+                    <TextBlock Text="Enter your shop's own SMTP account (a Gmail app password, Office 365, or any other mail server) to send ticket/appointment notifications." Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Header="SMTP host" Text="{Binding EmailHostInput, Mode=TwoWay}" PlaceholderText="smtp.gmail.com" />
+                        <NumberBox Grid.Column="1" Header="Port" Value="{Binding EmailPortInput, Mode=TwoWay}" Minimum="1" Maximum="65535" SpinButtonPlacementMode="Inline" />
+                    </Grid>
+                    <TextBox Header="Username" Text="{Binding EmailUsernameInput, Mode=TwoWay}" />
+                    <PasswordBox Header="Password / app password" Password="{Binding EmailPasswordInput, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Use SSL/STARTTLS" IsOn="{Binding EmailUseSslInput, Mode=TwoWay}" />
+                    <TextBox Header="From address" Text="{Binding EmailFromAddressInput, Mode=TwoWay}" />
+                    <TextBox Header="From name" Text="{Binding EmailFromNameInput, Mode=TwoWay}" />
+                    <Button Content="Save Email Settings" Command="{Binding SaveEmailSettingsCommand}" HorizontalAlignment="Left" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox Header="Send a test email to" Text="{Binding EmailTestRecipientInput, Mode=TwoWay}" Width="260" />
+                        <Button Content="Send Test Email" VerticalAlignment="Bottom" Command="{Binding SendTestEmailCommand}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding EmailStatusMessage}" Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
         </StackPanel>
     </ScrollViewer>
 </Page>

@@ -16,9 +16,11 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock Text="Products &amp; Services" Style="{StaticResource PageTitleStyle}" Margin="0" />
-            <Button Grid.Column="1" Content="Add Item" Style="{StaticResource AccentButtonStyle}" Click="AddItem_Click" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Content="Export CSV" Margin="0,0,8,0" Click="ExportCsv_Click" VerticalAlignment="Center" />
+            <Button Grid.Column="2" Content="Add Item" Style="{StaticResource AccentButtonStyle}" Click="AddItem_Click" VerticalAlignment="Center" />
         </Grid>
 
         <controls:BusyErrorBar Grid.Row="1" IsBusy="{Binding IsBusy}" ErrorMessage="{Binding ErrorMessage}" />

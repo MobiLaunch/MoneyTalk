@@ -139,6 +139,12 @@ public sealed partial class TicketEditPage : Page
         await ViewModel.AddPhotoAsync(file.Path);
     }
 
+    private async void RepairGuide_Click(object sender, ItemClickEventArgs e)
+    {
+        if (e.ClickedItem is MoneyTalk.Core.Accounting.RepairGuideResult guide)
+            await Windows.System.Launcher.LaunchUriAsync(new Uri(guide.Url));
+    }
+
     private void ClearSignature_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) =>
         SignatureCanvas.Children.Clear();
 

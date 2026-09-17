@@ -17,9 +17,11 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock Text="Repair Tickets" Style="{StaticResource PageTitleStyle}" Margin="0" />
-            <Button Grid.Column="1" Content="New Ticket" Style="{StaticResource AccentButtonStyle}" Command="{Binding NewTicketCommand}" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Content="Export CSV" Margin="0,0,8,0" Click="ExportCsv_Click" VerticalAlignment="Center" />
+            <Button Grid.Column="2" Content="New Ticket" Style="{StaticResource AccentButtonStyle}" Command="{Binding NewTicketCommand}" VerticalAlignment="Center" />
         </Grid>
 
         <controls:BusyErrorBar Grid.Row="1" IsBusy="{Binding IsBusy}" ErrorMessage="{Binding ErrorMessage}" />

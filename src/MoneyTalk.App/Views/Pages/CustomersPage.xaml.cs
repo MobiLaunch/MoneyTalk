@@ -114,4 +114,14 @@ public sealed partial class CustomersPage : Page
             (int)dialog.GetNumber("terms"), dialog.GetBool("taxExempt"), dialog.GetBool("isActive"),
             dialog.GetText("driversLicense"), dialog.GetText("tags"));
     }
+
+    private async void ExportCsv_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var headers = new[] { "Name", "Email", "Phone", "Payment Terms (days)", "Tags", "Balance" };
+        var rows = ViewModel.Customers.Select(c => new[]
+        {
+            c.Name, c.Email, c.Phone, c.PaymentTermsDays.ToString(), c.Tags, c.Balance.ToString("F2")
+        });
+        await Services.CsvExportService.SaveAsync(App.MainWindow, "customers.csv", Services.CsvExportService.ToCsv(headers, rows));
+    }
 }

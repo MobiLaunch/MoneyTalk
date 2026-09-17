@@ -2,7 +2,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using MoneyTalk.App.Dialogs;
 using MoneyTalk.App.Services;
+using MoneyTalk.App.ViewModels;
 using MoneyTalk.Core.Interfaces;
 using Windows.System;
 
@@ -83,6 +85,51 @@ public sealed partial class MainWindow : Window
     private void LockPinBox_KeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == VirtualKey.Enter) TryUnlock();
+    }
+
+    private async void CommandPaletteAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        args.Handled = true;
+        if (_isLocked) return;
+        await ShowCommandPaletteAsync();
+    }
+
+    private async Task ShowCommandPaletteAsync()
+    {
+        var dialog = new CommandPaletteDialog(SearchAsync) { XamlRoot = RootGrid.XamlRoot };
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary && dialog.SelectedResult is { } hit)
+            App.Services.GetRequiredService<INavigationService>().NavigateTo(hit.PageKey, hit.NavigationParameter);
+    }
+
+    /// <summary>Backs the Ctrl+K command palette — searches customers/items/tickets by name/SKU/
+    /// ticket number/device, five results per category. Customers and items land on their list
+    /// page (neither has a dedicated single-record edit page); tickets deep-link straight to the
+    /// matched ticket via <see cref="TicketEditNavigationArgs"/>.</summary>
+    private static async Task<List<CommandPaletteResult>> SearchAsync(string query)
+    {
+        var results = new List<CommandPaletteResult>();
+
+        var settingsService = App.Services.GetRequiredService<LocalSettingsService>();
+        var companyId = settingsService.Load().ActiveCompanyId;
+        if (companyId == null) return results;
+
+        var term = query.Trim();
+        using var uow = App.Services.GetRequiredService<Func<IUnitOfWork>>()();
+
+        var customers = await uow.Customers.FindAsync(c => c.CompanyId == companyId && c.Name.Contains(term));
+        foreach (var customer in customers.Take(5))
+            results.Add(new CommandPaletteResult { Category = "Customer", Title = customer.Name, Subtitle = customer.Email ?? string.Empty, PageKey = PageKeys.Customers });
+
+        var items = await uow.Items.FindAsync(i => i.CompanyId == companyId && (i.Name.Contains(term) || i.Sku.Contains(term)));
+        foreach (var item in items.Take(5))
+            results.Add(new CommandPaletteResult { Category = "Item", Title = item.Name, Subtitle = item.Sku, PageKey = PageKeys.Items });
+
+        var tickets = await uow.RepairTickets.FindAsync(t => t.CompanyId == companyId && (t.TicketNumber.Contains(term) || t.Device.Contains(term)));
+        foreach (var ticket in tickets.Take(5))
+            results.Add(new CommandPaletteResult { Category = "Ticket", Title = ticket.TicketNumber, Subtitle = ticket.Device, PageKey = PageKeys.TicketEdit, NavigationParameter = new TicketEditNavigationArgs(ticket.Id) });
+
+        return results;
     }
 
     private async void RootNavigationView_Loaded(object sender, RoutedEventArgs e)

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MoneyTalk.App.Services;
+using MoneyTalk.Core.Accounting;
 using MoneyTalk.Core.Entities;
 using MoneyTalk.Core.Interfaces;
 using MoneyTalk.Core.Interfaces.Integrations;
@@ -27,6 +28,8 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
     private readonly IQuickBooksClient _quickBooksClient;
     private readonly SquareOptions _squareOptions;
     private readonly QuickBooksOptions _quickBooksOptions;
+    private readonly EmailOptions _emailOptions;
+    private readonly EmailService _emailService;
 
     [ObservableProperty] private string geminiApiKeyInput = string.Empty;
     [ObservableProperty] private bool hasGeminiKey;
@@ -61,10 +64,20 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
     [ObservableProperty] private string squareTotalPayoutsDisplay = "—";
     [ObservableProperty] private string squareOrdersCountDisplay = "—";
 
+    [ObservableProperty] private string emailHostInput = string.Empty;
+    [ObservableProperty] private int emailPortInput = 587;
+    [ObservableProperty] private string emailUsernameInput = string.Empty;
+    [ObservableProperty] private string emailPasswordInput = string.Empty;
+    [ObservableProperty] private bool emailUseSslInput = true;
+    [ObservableProperty] private string emailFromAddressInput = string.Empty;
+    [ObservableProperty] private string emailFromNameInput = "MoneyTalk";
+    [ObservableProperty] private string emailTestRecipientInput = string.Empty;
+    [ObservableProperty] private string? emailStatusMessage;
+
     public IntegrationsSettingsViewModel(
         Func<IUnitOfWork> unitOfWorkFactory, LocalSettingsService settingsService,
         ISecureTokenStore secureTokenStore, ISquareClient squareClient, IQuickBooksClient quickBooksClient,
-        SquareOptions squareOptions, QuickBooksOptions quickBooksOptions)
+        SquareOptions squareOptions, QuickBooksOptions quickBooksOptions, EmailOptions emailOptions, EmailService emailService)
         : base(unitOfWorkFactory, settingsService)
     {
         _secureTokenStore = secureTokenStore;
@@ -72,6 +85,8 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
         _quickBooksClient = quickBooksClient;
         _squareOptions = squareOptions;
         _quickBooksOptions = quickBooksOptions;
+        _emailOptions = emailOptions;
+        _emailService = emailService;
     }
 
     [RelayCommand]
@@ -134,6 +149,13 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
         QuickBooksClientIdInput = _quickBooksOptions.ClientId;
         QuickBooksRedirectUriInput = _quickBooksOptions.RedirectUri;
         QuickBooksUseSandboxInput = _quickBooksOptions.UseSandbox;
+
+        EmailHostInput = _emailOptions.Host;
+        EmailPortInput = _emailOptions.Port;
+        EmailUsernameInput = _emailOptions.Username;
+        EmailUseSslInput = _emailOptions.UseSsl;
+        EmailFromAddressInput = _emailOptions.FromAddress;
+        EmailFromNameInput = _emailOptions.FromName;
 
         await RunBusyAsync(async () =>
         {
@@ -348,6 +370,51 @@ public partial class IntegrationsSettingsViewModel : ViewModelBase
             QuickBooksIsConnected = true;
             QuickBooksAuthCodeInput = string.Empty;
             QuickBooksStatusMessage = $"QuickBooks connected (company {tokens.RealmId}).";
+        });
+    }
+
+    [RelayCommand]
+    private void SaveEmailSettings()
+    {
+        _emailOptions.Host = EmailHostInput.Trim();
+        _emailOptions.Port = EmailPortInput;
+        _emailOptions.Username = EmailUsernameInput.Trim();
+        _emailOptions.UseSsl = EmailUseSslInput;
+        _emailOptions.FromAddress = EmailFromAddressInput.Trim();
+        _emailOptions.FromName = string.IsNullOrWhiteSpace(EmailFromNameInput) ? "MoneyTalk" : EmailFromNameInput.Trim();
+        if (!string.IsNullOrWhiteSpace(EmailPasswordInput))
+        {
+            _emailOptions.Password = EmailPasswordInput.Trim();
+            _secureTokenStore.SaveSecret(SecretKeys.EmailPassword, _emailOptions.Password);
+        }
+
+        var settings = SettingsService.Load();
+        settings.EmailHost = _emailOptions.Host;
+        settings.EmailPort = _emailOptions.Port;
+        settings.EmailUsername = _emailOptions.Username;
+        settings.EmailUseSsl = _emailOptions.UseSsl;
+        settings.EmailFromAddress = _emailOptions.FromAddress;
+        settings.EmailFromName = _emailOptions.FromName;
+        SettingsService.Save(settings);
+
+        EmailPasswordInput = string.Empty;
+        EmailStatusMessage = "Email settings saved.";
+    }
+
+    [RelayCommand]
+    private async Task SendTestEmailAsync()
+    {
+        if (string.IsNullOrWhiteSpace(EmailTestRecipientInput))
+        {
+            EmailStatusMessage = "Enter a recipient address to send a test to.";
+            return;
+        }
+
+        await RunBusyAsync(async () =>
+        {
+            await _emailService.SendAsync(EmailTestRecipientInput.Trim(), "MoneyTalk Test Email",
+                "This is a test notification from MoneyTalk — if you received this, email notifications are working.");
+            EmailStatusMessage = $"Test email sent to {EmailTestRecipientInput.Trim()}.";
         });
     }
 }

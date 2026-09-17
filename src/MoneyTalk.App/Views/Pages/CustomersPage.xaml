@@ -18,11 +18,13 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock Text="Customers" Style="{StaticResource PageTitleStyle}" Margin="0" />
-            <Button Grid.Column="1" Content="View Tickets" Margin="0,0,8,0" Click="ViewTickets_Click" VerticalAlignment="Center" />
-            <Button Grid.Column="2" Content="New Invoice" Margin="0,0,8,0" Command="{Binding NewInvoiceForSelectedCommand}" VerticalAlignment="Center" />
-            <Button Grid.Column="3" Content="Add Customer" Style="{StaticResource AccentButtonStyle}" Click="AddCustomer_Click" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Content="Export CSV" Margin="0,0,8,0" Click="ExportCsv_Click" VerticalAlignment="Center" />
+            <Button Grid.Column="2" Content="View Tickets" Margin="0,0,8,0" Click="ViewTickets_Click" VerticalAlignment="Center" />
+            <Button Grid.Column="3" Content="New Invoice" Margin="0,0,8,0" Command="{Binding NewInvoiceForSelectedCommand}" VerticalAlignment="Center" />
+            <Button Grid.Column="4" Content="Add Customer" Style="{StaticResource AccentButtonStyle}" Click="AddCustomer_Click" VerticalAlignment="Center" />
         </Grid>
 
         <controls:BusyErrorBar Grid.Row="1" IsBusy="{Binding IsBusy}" ErrorMessage="{Binding ErrorMessage}" />

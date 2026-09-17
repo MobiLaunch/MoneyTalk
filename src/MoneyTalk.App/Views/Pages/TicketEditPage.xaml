@@ -143,6 +143,24 @@
                 </StackPanel>
             </PivotItem>
 
+            <PivotItem Header="Repair Guides">
+                <StackPanel Spacing="12" Padding="0,16,0,0" MaxWidth="700">
+                    <Button Content="Search iFixit for this device" Command="{Binding SearchRepairGuidesCommand}" HorizontalAlignment="Left" />
+                    <ListView ItemsSource="{Binding RepairGuides}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="RepairGuide_Click">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="8" Padding="0,4">
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding Difficulty}" Style="{StaticResource MutedTextStyle}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    <TextBlock Text="No guides found yet — try searching above." Style="{StaticResource MutedTextStyle}"
+                               Visibility="{Binding RepairGuides.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=Invert}" />
+                </StackPanel>
+            </PivotItem>
+
             <PivotItem Header="Photos &amp; Signature">
                 <ScrollViewer Padding="0,16,0,0">
                     <StackPanel Spacing="16" MaxWidth="700">

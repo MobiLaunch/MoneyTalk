@@ -40,6 +40,15 @@ public class AppSettings
     /// lock delay) — see <c>MainWindow</c>. Off by default so a fresh install isn't locked out
     /// before a PIN has ever been set.</summary>
     public bool ScreenLockEnabled { get; set; }
+
+    /// <summary>SMTP settings for outbound notification emails — the password is stored via the
+    /// secure token store instead, same as every other credential in this app.</summary>
+    public string EmailHost { get; set; } = string.Empty;
+    public int EmailPort { get; set; } = 587;
+    public string EmailUsername { get; set; } = string.Empty;
+    public bool EmailUseSsl { get; set; } = true;
+    public string EmailFromAddress { get; set; } = string.Empty;
+    public string EmailFromName { get; set; } = "MoneyTalk";
 }
 
 public class LocalSettingsService

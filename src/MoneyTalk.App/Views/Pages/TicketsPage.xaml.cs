@@ -24,4 +24,15 @@ public sealed partial class TicketsPage : Page
 
     private void Grid_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e) =>
         ViewModel.OpenSelectedCommand.Execute(null);
+
+    private async void ExportCsv_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var headers = new[] { "Ticket #", "Customer", "Device", "Issue", "Priority", "Status", "Age (days)", "Balance" };
+        var rows = ViewModel.Tickets.Select(t => new[]
+        {
+            t.TicketNumber, t.CustomerName, t.Device, t.Issue, t.Priority.ToString(), t.Status,
+            t.AgeDays.ToString(), t.Balance.ToString("F2")
+        });
+        await Services.CsvExportService.SaveAsync(App.MainWindow, "tickets.csv", Services.CsvExportService.ToCsv(headers, rows));
+    }
 }

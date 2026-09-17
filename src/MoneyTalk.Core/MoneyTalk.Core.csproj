@@ -8,4 +8,10 @@
     <AssemblyName>MoneyTalk.Core</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- SMTP notification emails (see EmailService) — MailKit rather than the obsolete
+         System.Net.Mail.SmtpClient. -->
+    <PackageReference Include="MailKit" Version="4.9.0" />
+  </ItemGroup>
+
 </Project>

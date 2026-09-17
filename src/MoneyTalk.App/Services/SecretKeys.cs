@@ -18,4 +18,6 @@ public static class SecretKeys
     /// <summary>PIN for the app-wide idle screen lock — a machine-level control, not tied to any
     /// one company, so (unlike the Square/QuickBooks keys above) it isn't namespaced by company id.</summary>
     public static string ScreenLockPin => "screenlock:pin";
+
+    public static string EmailPassword => "email:password";
 }

@@ -18,6 +18,8 @@ public partial class TicketEditViewModel : ViewModelBase
 {
     private readonly RepairTicketService _ticketService;
     private readonly Services.INavigationService _navigationService;
+    private readonly IFixitClient _iFixitClient;
+    private readonly EmailService _emailService;
 
     private Guid? _ticketId;
     private decimal _currentBalance;
@@ -32,6 +34,7 @@ public partial class TicketEditViewModel : ViewModelBase
     public ObservableCollection<RepairTicketNote> Notes { get; } = new();
     public ObservableCollection<RepairTicketPayment> Payments { get; } = new();
     public ObservableCollection<PhotoAttachmentRow> Photos { get; } = new();
+    public ObservableCollection<RepairGuideResult> RepairGuides { get; } = new();
 
     [ObservableProperty] private string ticketNumber = string.Empty;
     [ObservableProperty] private Customer? selectedCustomer;
@@ -57,11 +60,14 @@ public partial class TicketEditViewModel : ViewModelBase
 
     public TicketEditViewModel(
         Func<IUnitOfWork> unitOfWorkFactory, Services.LocalSettingsService settingsService,
-        RepairTicketService ticketService, Services.INavigationService navigationService)
+        RepairTicketService ticketService, Services.INavigationService navigationService, IFixitClient iFixitClient,
+        EmailService emailService)
         : base(unitOfWorkFactory, settingsService)
     {
         _ticketService = ticketService;
         _navigationService = navigationService;
+        _iFixitClient = iFixitClient;
+        _emailService = emailService;
     }
 
     public async Task LoadAsync(TicketEditNavigationArgs args)
@@ -162,6 +168,8 @@ public partial class TicketEditViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(Device)) { ErrorMessage = "Enter the device type first."; return; }
         if (string.IsNullOrWhiteSpace(Issue)) { ErrorMessage = "Describe the issue first."; return; }
 
+        var wasNew = IsNew;
+
         await RunBusyAsync(async () =>
         {
             using var uow = NewUnitOfWork();
@@ -188,6 +196,22 @@ public partial class TicketEditViewModel : ViewModelBase
             await _ticketService.SaveAsync(uow, ticket);
             _ticketId = ticket.Id;
             OnPropertyChanged(nameof(IsNew));
+
+            if (wasNew && _emailService.IsConfigured && SelectedCustomer?.Email is { Length: > 0 } customerEmail)
+            {
+                try
+                {
+                    await _emailService.SendAsync(
+                        customerEmail, $"Repair Ticket {ticket.TicketNumber} Created",
+                        $"Hi {SelectedCustomer.Name},\n\nWe've created repair ticket {ticket.TicketNumber} for your {ticket.Device}. " +
+                        "We'll keep you posted as work progresses.\n\nThank you!");
+                }
+                catch
+                {
+                    // Best-effort notification — a misconfigured or unreachable mail server should
+                    // never block saving the ticket itself.
+                }
+            }
         });
     }
 
@@ -291,4 +315,18 @@ public partial class TicketEditViewModel : ViewModelBase
 
     [RelayCommand]
     private void GoBack() => _navigationService.GoBack();
+
+    [RelayCommand]
+    private async Task SearchRepairGuidesAsync()
+    {
+        var query = !string.IsNullOrWhiteSpace(DeviceModel) ? $"{Device} {DeviceModel}" : Device;
+        if (string.IsNullOrWhiteSpace(query)) { ErrorMessage = "Enter a device first."; return; }
+
+        await RunBusyAsync(async () =>
+        {
+            var guides = await _iFixitClient.SearchGuidesAsync(query);
+            RepairGuides.Clear();
+            foreach (var guide in guides) RepairGuides.Add(guide);
+        });
+    }
 }

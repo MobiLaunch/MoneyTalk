@@ -4,6 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
   <Grid x:Name="RootGrid">
+    <Grid.KeyboardAccelerators>
+        <KeyboardAccelerator Key="K" Modifiers="Control" Invoked="CommandPaletteAccelerator_Invoked" />
+    </Grid.KeyboardAccelerators>
+
     <NavigationView
         x:Name="RootNavigationView"
         IsBackButtonVisible="Auto"
