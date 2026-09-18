@@ -78,6 +78,8 @@ public class SimpleFormDialog : ContentDialog
     public int GetComboIndex(string key) => _comboBoxes[key].SelectedIndex;
     public string GetComboValue(string key) => _comboBoxes[key].SelectedItem as string ?? string.Empty;
     public bool GetBool(string key) => _checkBoxes[key].IsChecked == true;
-    public double GetNumber(string key) => _numberBoxes[key].Value;
+    // An empty NumberBox reports NaN, and every caller casts this to decimal — which throws
+    // OverflowException on NaN — so treat "cleared field" as zero.
+    public double GetNumber(string key) => double.IsNaN(_numberBoxes[key].Value) ? 0d : _numberBoxes[key].Value;
     public DateTimeOffset GetDate(string key) => _datePickers[key].Date;
 }

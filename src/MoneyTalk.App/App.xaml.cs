@@ -77,8 +77,15 @@ public partial class App : Application
         // Every unit-of-work gets its own DbContext instance; ViewModels resolve a fresh one per
         // operation (or hold one for the duration of an edit session) via this factory rather
         // than sharing a single app-wide DbContext.
+        //
+        // The context is newed up from the (singleton) options instead of being resolved, because
+        // the container keeps a reference to every IDisposable transient it hands out so it can
+        // dispose them with the provider. ViewModels resolve from the root provider, which only
+        // goes away at shutdown, so resolving the context would pile up one leaked DbContext per
+        // operation for the life of the app even though callers dispose their unit of work.
         services.AddTransient<IUnitOfWork>(sp => new EfUnitOfWork(sp.GetRequiredService<MoneyTalkDbContext>()));
-        services.AddTransient<Func<IUnitOfWork>>(sp => () => sp.GetRequiredService<IUnitOfWork>());
+        services.AddTransient<Func<IUnitOfWork>>(sp => () =>
+            new EfUnitOfWork(new MoneyTalkDbContext(sp.GetRequiredService<DbContextOptions<MoneyTalkDbContext>>())));
 
         services.AddSingleton<ISecureTokenStore>(secureTokenStore);
         services.AddSingleton<INavigationService, NavigationService>();

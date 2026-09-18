@@ -160,8 +160,9 @@ public sealed partial class MainWindow : Window
         }
         else
         {
+            // Selecting the item is what navigates: SelectionChanged fires and calls NavigateTo with
+            // the item's Tag. Navigating explicitly as well would build and load Dashboard twice.
             RootNavigationView.SelectedItem = RootNavigationView.MenuItems[0];
-            navigationService.NavigateTo(PageKeys.Dashboard);
         }
     }
 

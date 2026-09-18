@@ -33,7 +33,10 @@ public class InvoiceService
 
     public async Task<Invoice> SaveDraftAsync(IUnitOfWork uow, Invoice invoice, CancellationToken ct = default)
     {
-        RecalculateTotals(invoice);
+        // Tax rates have to be loaded here: without them RecalculateTotals skips the tax loop and
+        // every invoice saves with TaxTotal = 0, which also makes posting's sales-tax credit dead code.
+        var taxRates = (await uow.TaxRates.FindAsync(t => t.CompanyId == invoice.CompanyId, ct)).ToDictionary(t => t.Id);
+        RecalculateTotals(invoice, taxRates);
         invoice.Status = InvoiceStatus.Draft;
         var existing = await uow.Invoices.GetByIdAsync(invoice.Id, ct);
         if (existing == null)

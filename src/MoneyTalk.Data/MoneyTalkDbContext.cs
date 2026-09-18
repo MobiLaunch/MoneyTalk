@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata;
 using MoneyTalk.Core.Entities;
 
 namespace MoneyTalk.Data;
@@ -185,6 +186,20 @@ public class MoneyTalkDbContext : DbContext
         modelBuilder.Entity<DeviceBrand>(b => b.HasIndex(x => new { x.CompanyId, x.Name }).IsUnique());
         modelBuilder.Entity<DeviceCategory>(b => b.HasIndex(x => new { x.CompanyId, x.Name }).IsUnique());
         modelBuilder.Entity<DeviceModel>(b => b.HasIndex(x => new { x.CompanyId, x.DeviceBrandId, x.DeviceCategoryId, x.Name }).IsUnique());
+
+        // Every Id in this model is a client-assigned Guid (EntityBase.Id = Guid.NewGuid()), but EF's
+        // convention marks a Guid primary key as store-generated. That mismatch is not cosmetic: the
+        // graph attacher reads "store-generated key AND already set" as "this row already exists", so a
+        // brand-new child added to a collection navigation on an already-persisted parent gets marked
+        // Modified instead of Added, and EF emits an UPDATE for a row that was never inserted —
+        // "expected to affect 1 row(s), but actually affected 0". Runs last so it covers every entity
+        // type discovered by the relationship configuration above.
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            var idProperty = entityType.FindProperty(nameof(EntityBase.Id));
+            if (idProperty != null && idProperty.ClrType == typeof(Guid))
+                idProperty.SetValueGenerated(ValueGenerated.Never);
+        }
     }
 
     private static void ConfigureEnumsAsStrings(ModelBuilder modelBuilder)

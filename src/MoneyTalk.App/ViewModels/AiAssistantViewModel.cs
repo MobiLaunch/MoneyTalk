@@ -79,7 +79,10 @@ public partial class AiAssistantViewModel : ViewModelBase
         }
 
         UserInput = string.Empty;
-        Messages.Add(new AiMessage { ConversationId = _conversationId.Value, Role = AiMessageRole.User, Content = message });
+        // Held in a local so the failure path can undo exactly this optimistic bubble rather than
+        // whatever happens to be last by then.
+        var optimistic = new AiMessage { ConversationId = _conversationId.Value, Role = AiMessageRole.User, Content = message };
+        Messages.Add(optimistic);
 
         IsSending = true;
         ErrorMessage = null;
@@ -92,7 +95,10 @@ public partial class AiAssistantViewModel : ViewModelBase
         catch (Exception ex)
         {
             ErrorMessage = ex.Message;
-            Messages.RemoveAt(Messages.Count - 1);
+            if (Messages.Count > 0 && ReferenceEquals(Messages[^1], optimistic))
+                Messages.Remove(optimistic);
+            // The send failed, so hand the user their text back instead of making them retype it.
+            UserInput = message;
         }
         finally
         {

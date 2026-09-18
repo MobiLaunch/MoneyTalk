@@ -33,7 +33,10 @@ public class BillService
 
     public async Task<Bill> SaveDraftAsync(IUnitOfWork uow, Bill bill, CancellationToken ct = default)
     {
-        RecalculateTotals(bill);
+        // Tax rates have to be loaded here: without them RecalculateTotals skips the tax loop and
+        // every bill saves with TaxTotal = 0.
+        var taxRates = (await uow.TaxRates.FindAsync(t => t.CompanyId == bill.CompanyId, ct)).ToDictionary(t => t.Id);
+        RecalculateTotals(bill, taxRates);
         var existing = await uow.Bills.GetByIdAsync(bill.Id, ct);
         if (existing == null)
             await uow.Bills.AddAsync(bill, ct);
