@@ -110,9 +110,11 @@ public partial class ItemsViewModel : ViewModelBase
         return success;
     }
 
-    /// <summary>Encodes the item's SKU as a CODE128 barcode and sends a small label (name, SKU,
-    /// price, barcode) straight to the configured printer — see <see cref="PrintService"/> for
-    /// why this goes through classic GDI+ printing rather than the WinRT printing stack.</summary>
+    /// <summary>Encodes the item's SKU as a barcode/QR and sends a label to the configured label
+    /// printer — see <see cref="PrintService"/> for why this goes through classic GDI+ printing
+    /// rather than the WinRT printing stack. What fields show and which symbology is used come
+    /// from the Label Editor page (<see cref="AppSettings.LabelShowSku"/>,
+    /// <see cref="AppSettings.LabelShowPrice"/>, <see cref="AppSettings.LabelBarcodeFormat"/>).</summary>
     public void PrintLabel(Item item)
     {
         if (string.IsNullOrWhiteSpace(item.Sku))
@@ -123,9 +125,15 @@ public partial class ItemsViewModel : ViewModelBase
 
         try
         {
-            var barcode = BarcodeService.Encode(item.Sku, LabelBarcodeFormat.Code128, 260, 80);
-            var printerName = SettingsService.Load().ReceiptPrinterName;
-            PrintService.PrintLabel(printerName, item.Name, $"{item.Sku} · {item.SalesPrice:C2}", barcode);
+            var settings = SettingsService.Load();
+            var format = settings.LabelBarcodeFormat == nameof(LabelBarcodeFormat.QrCode) ? LabelBarcodeFormat.QrCode : LabelBarcodeFormat.Code128;
+            var barcode = BarcodeService.Encode(item.Sku, format, 260, 80);
+
+            var secondaryParts = new List<string>();
+            if (settings.LabelShowSku) secondaryParts.Add(item.Sku);
+            if (settings.LabelShowPrice) secondaryParts.Add(item.SalesPrice.ToString("C2"));
+
+            PrintService.PrintLabel(settings.LabelPrinterName, item.Name, string.Join(" · ", secondaryParts), barcode);
         }
         catch (Exception ex)
         {

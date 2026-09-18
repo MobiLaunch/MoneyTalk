@@ -37,6 +37,8 @@ public class NavigationService : INavigationService
         [PageKeys.CompanySettings] = typeof(CompanySettingsPage),
         [PageKeys.Users] = typeof(UsersPage),
         [PageKeys.Onboarding] = typeof(OnboardingPage),
+        [PageKeys.LabelEditor] = typeof(LabelEditorPage),
+        [PageKeys.ReceiptEditor] = typeof(ReceiptEditorPage),
     };
 
     private Frame? _frame;
@@ -92,4 +94,7 @@ public static class PageKeys
     public const string CompanySettings = "CompanySettings";
     public const string Users = "Users";
     public const string Onboarding = "Onboarding";
+    public const string LabelEditor = "LabelEditor";
+    public const string ReceiptEditor = "ReceiptEditor";
+    public const string DeviceTriage = "DeviceTriage";
 }

@@ -124,4 +124,64 @@ public partial class CustomersViewModel : ViewModelBase
         if (success) await LoadAsync();
         return success;
     }
+
+    /// <summary>Imports customers from parsed CSV rows (see <see cref="CsvImportService"/>).
+    /// Matches an existing customer by email (case-insensitive) and updates it in place; otherwise
+    /// creates a new one. A row with no name is skipped rather than failing the whole import.</summary>
+    public async Task<(int Imported, int Updated, int Skipped)> ImportCustomersAsync(List<Dictionary<string, string>> rows)
+    {
+        var imported = 0;
+        var updated = 0;
+        var skipped = 0;
+
+        await RunBusyAsync(async () =>
+        {
+            using var uow = NewUnitOfWork();
+            var companyId = ActiveCompanyId;
+            var existingByEmail = (await uow.Customers.FindAsync(c => c.CompanyId == companyId))
+                .Where(c => !string.IsNullOrWhiteSpace(c.Email))
+                .ToDictionary(c => c.Email!.Trim(), c => c, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var row in rows)
+            {
+                var name = CsvImportService.Get(row, "Name", "Customer Name", "Customer");
+                if (string.IsNullOrWhiteSpace(name)) { skipped++; continue; }
+
+                var email = CsvImportService.Get(row, "Email");
+                var phone = CsvImportService.Get(row, "Phone");
+                var tags = CsvImportService.Get(row, "Tags");
+                var termsText = CsvImportService.Get(row, "Payment Terms (days)", "Payment Terms", "Terms");
+                var terms = int.TryParse(termsText, out var parsedTerms) ? parsedTerms : 30;
+
+                if (email != null && existingByEmail.TryGetValue(email, out var existing))
+                {
+                    existing.Name = name;
+                    existing.Phone = phone;
+                    existing.Tags = tags;
+                    existing.PaymentTermsDays = terms;
+                    uow.Customers.Update(existing);
+                    updated++;
+                }
+                else
+                {
+                    var customer = new Customer
+                    {
+                        CompanyId = companyId,
+                        Name = name,
+                        Email = email,
+                        Phone = phone,
+                        Tags = tags,
+                        PaymentTermsDays = terms
+                    };
+                    await uow.Customers.AddAsync(customer);
+                    imported++;
+                }
+            }
+
+            await uow.SaveChangesAsync();
+        });
+
+        await LoadAsync();
+        return (imported, updated, skipped);
+    }
 }

@@ -124,4 +124,21 @@ public sealed partial class CustomersPage : Page
         });
         await Services.CsvExportService.SaveAsync(App.MainWindow, "customers.csv", Services.CsvExportService.ToCsv(headers, rows));
     }
+
+    private async void ImportCsv_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var rows = await Services.CsvImportService.PickAndParseAsync(App.MainWindow);
+        if (rows == null) return;
+
+        var (imported, updated, skipped) = await ViewModel.ImportCustomersAsync(rows);
+
+        var dialog = new ContentDialog
+        {
+            Title = "Import complete",
+            Content = $"Added {imported} new customer(s), updated {updated} existing (matched by email), skipped {skipped} row(s) with no name.",
+            CloseButtonText = "OK",
+            XamlRoot = this.XamlRoot
+        };
+        await dialog.ShowAsync();
+    }
 }

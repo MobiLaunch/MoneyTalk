@@ -11,6 +11,7 @@ public partial class CompanySettingsViewModel : ViewModelBase
     private const string SystemDefaultPrinterOption = "(System default)";
 
     private readonly ISecureTokenStore _secureTokenStore;
+    private readonly INavigationService _navigationService;
 
     [ObservableProperty] private string name = string.Empty;
     [ObservableProperty] private string? legalName;
@@ -26,8 +27,9 @@ public partial class CompanySettingsViewModel : ViewModelBase
     [ObservableProperty] private decimal lowCashWarningThreshold = 5000m;
     [ObservableProperty] private string? statusMessage;
 
-    public ObservableCollection<string> ReceiptPrinterOptions { get; } = new();
+    public ObservableCollection<string> PrinterOptions { get; } = new();
     [ObservableProperty] private string selectedReceiptPrinter = SystemDefaultPrinterOption;
+    [ObservableProperty] private string selectedLabelPrinter = SystemDefaultPrinterOption;
 
     [ObservableProperty] private bool screenLockEnabled;
     [ObservableProperty] private bool hasScreenLockPin;
@@ -35,11 +37,20 @@ public partial class CompanySettingsViewModel : ViewModelBase
     [ObservableProperty] private string confirmPinInput = string.Empty;
     [ObservableProperty] private string? pinStatusMessage;
 
-    public CompanySettingsViewModel(Func<IUnitOfWork> unitOfWorkFactory, LocalSettingsService settingsService, ISecureTokenStore secureTokenStore)
+    public CompanySettingsViewModel(
+        Func<IUnitOfWork> unitOfWorkFactory, LocalSettingsService settingsService,
+        ISecureTokenStore secureTokenStore, INavigationService navigationService)
         : base(unitOfWorkFactory, settingsService)
     {
         _secureTokenStore = secureTokenStore;
+        _navigationService = navigationService;
     }
+
+    [RelayCommand]
+    private void GoToLabelEditor() => _navigationService.NavigateTo(PageKeys.LabelEditor);
+
+    [RelayCommand]
+    private void GoToReceiptEditor() => _navigationService.NavigateTo(PageKeys.ReceiptEditor);
 
     [RelayCommand]
     public async Task LoadAsync()
@@ -64,13 +75,16 @@ public partial class CompanySettingsViewModel : ViewModelBase
             LowCashWarningThreshold = company.LowCashWarningThreshold;
 
             var settings = SettingsService.Load();
-            ReceiptPrinterOptions.Clear();
-            ReceiptPrinterOptions.Add(SystemDefaultPrinterOption);
+            PrinterOptions.Clear();
+            PrinterOptions.Add(SystemDefaultPrinterOption);
             foreach (var printerName in PrintService.GetInstalledPrinterNames())
-                ReceiptPrinterOptions.Add(printerName);
-            SelectedReceiptPrinter = string.IsNullOrEmpty(settings.ReceiptPrinterName) || !ReceiptPrinterOptions.Contains(settings.ReceiptPrinterName)
+                PrinterOptions.Add(printerName);
+            SelectedReceiptPrinter = string.IsNullOrEmpty(settings.ReceiptPrinterName) || !PrinterOptions.Contains(settings.ReceiptPrinterName)
                 ? SystemDefaultPrinterOption
                 : settings.ReceiptPrinterName;
+            SelectedLabelPrinter = string.IsNullOrEmpty(settings.LabelPrinterName) || !PrinterOptions.Contains(settings.LabelPrinterName)
+                ? SystemDefaultPrinterOption
+                : settings.LabelPrinterName;
 
             ScreenLockEnabled = settings.ScreenLockEnabled;
             HasScreenLockPin = !string.IsNullOrEmpty(_secureTokenStore.GetSecret(SecretKeys.ScreenLockPin));
@@ -108,6 +122,7 @@ public partial class CompanySettingsViewModel : ViewModelBase
 
             var settings = SettingsService.Load();
             settings.ReceiptPrinterName = SelectedReceiptPrinter == SystemDefaultPrinterOption ? string.Empty : SelectedReceiptPrinter;
+            settings.LabelPrinterName = SelectedLabelPrinter == SystemDefaultPrinterOption ? string.Empty : SelectedLabelPrinter;
             settings.ScreenLockEnabled = ScreenLockEnabled;
             SettingsService.Save(settings);
 

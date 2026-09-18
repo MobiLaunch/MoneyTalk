@@ -173,6 +173,8 @@ public partial class App : Application
         services.AddTransient<IntegrationsSettingsViewModel>();
         services.AddTransient<CompanySettingsViewModel>();
         services.AddTransient<UsersViewModel>();
+        services.AddTransient<LabelEditorViewModel>();
+        services.AddTransient<ReceiptEditorViewModel>();
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)

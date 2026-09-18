@@ -163,17 +163,28 @@ public partial class PosViewModel : ViewModelBase
     {
         if (!HasLastReceipt) return;
 
+        var settings = SettingsService.Load();
         var lines = new List<string>();
+        if (!string.IsNullOrWhiteSpace(settings.ReceiptHeaderText))
+        {
+            lines.Add(settings.ReceiptHeaderText);
+            lines.Add(string.Empty);
+        }
         lines.Add($"Customer: {_lastReceiptCustomerName}");
         lines.Add(new string('-', 32));
         foreach (var line in _lastReceiptLines)
             lines.Add($"{line.Quantity:0.##} x {line.Description}  {line.Amount:C2}");
         lines.Add(new string('-', 32));
         lines.Add($"Total: {_lastReceiptTotal:C2}");
+        if (!string.IsNullOrWhiteSpace(settings.ReceiptFooterText))
+        {
+            lines.Add(string.Empty);
+            lines.Add(settings.ReceiptFooterText);
+        }
 
         try
         {
-            PrintService.PrintReceipt(SettingsService.Load().ReceiptPrinterName, "MoneyTalk Receipt", lines);
+            PrintService.PrintReceipt(settings.ReceiptPrinterName, "MoneyTalk Receipt", lines);
         }
         catch (Exception ex)
         {

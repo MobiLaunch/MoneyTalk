@@ -32,9 +32,28 @@ public class AppSettings
 
     public bool HasCompletedOnboarding { get; set; }
 
-    /// <summary>Windows printer name to send receipts/labels to (see <see cref="Services.PrintService"/>).
-    /// Empty means "use the system default printer".</summary>
+    /// <summary>Windows printer to send receipts to (see <see cref="Services.PrintService"/>).
+    /// Empty means "use the system default printer". Deliberately separate from
+    /// <see cref="LabelPrinterName"/> — a repair shop's receipt printer (often a thermal
+    /// till-roll printer at the register) and its label printer (often a dedicated barcode-label
+    /// printer at the bench) are normally two different physical devices.</summary>
     public string ReceiptPrinterName { get; set; } = string.Empty;
+
+    /// <summary>Windows printer to send item/ticket labels to. See <see cref="ReceiptPrinterName"/>
+    /// for why this is a separate setting.</summary>
+    public string LabelPrinterName { get; set; } = string.Empty;
+
+    /// <summary>Receipt template: optional line printed under the "Customer:" line, and optional
+    /// line printed at the very end — see the Receipt Editor page.</summary>
+    public string ReceiptHeaderText { get; set; } = string.Empty;
+    public string ReceiptFooterText { get; set; } = "Thank you for your business!";
+
+    /// <summary>Label template: which fields appear under the item name, and which barcode symbology
+    /// to encode the SKU as — see the Label Editor page. Stored as the enum's name rather than the
+    /// enum itself since <see cref="AppSettings"/> is plain JSON.</summary>
+    public bool LabelShowSku { get; set; } = true;
+    public bool LabelShowPrice { get; set; } = true;
+    public string LabelBarcodeFormat { get; set; } = nameof(global::MoneyTalk.App.Services.LabelBarcodeFormat.Code128); // "Code128" or "QrCode"
 
     /// <summary>App-wide idle screen lock (3-minute idle timeout, matching NovaOps's hardcoded
     /// lock delay) — see <c>MainWindow</c>. Off by default so a fresh install isn't locked out
