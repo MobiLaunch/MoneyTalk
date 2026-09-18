@@ -41,6 +41,7 @@ public class MoneyTalkDbContext : DbContext
     public DbSet<DeviceBrand> DeviceBrands => Set<DeviceBrand>();
     public DbSet<DeviceCategory> DeviceCategories => Set<DeviceCategory>();
     public DbSet<DeviceModel> DeviceModels => Set<DeviceModel>();
+    public DbSet<DeviceTriageRecord> DeviceTriageRecords => Set<DeviceTriageRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -229,5 +230,7 @@ public class MoneyTalkDbContext : DbContext
         modelBuilder.Entity<TradeIn>().Property(t => t.ConditionGrade).HasConversion<string>();
         modelBuilder.Entity<TradeIn>().Property(t => t.ScreenCondition).HasConversion<string>();
         modelBuilder.Entity<TradeIn>().Property(t => t.Status).HasConversion<string>();
+        modelBuilder.Entity<DeviceTriageRecord>().Property(d => d.Platform).HasConversion<string>();
+        modelBuilder.Entity<DeviceTriageRecord>().Property(d => d.Status).HasConversion<string>();
     }
 }

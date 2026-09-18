@@ -39,6 +39,7 @@ public class NavigationService : INavigationService
         [PageKeys.Onboarding] = typeof(OnboardingPage),
         [PageKeys.LabelEditor] = typeof(LabelEditorPage),
         [PageKeys.ReceiptEditor] = typeof(ReceiptEditorPage),
+        [PageKeys.DeviceTriage] = typeof(DeviceTriagePage),
     };
 
     private Frame? _frame;

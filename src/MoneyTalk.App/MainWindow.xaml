@@ -30,6 +30,7 @@
             <NavigationViewItem Content="Calendar" Tag="Calendar" Icon="Calendar" />
             <NavigationViewItem Content="Vendor Repairs" Tag="VendorRepairs" Icon="Send" />
             <NavigationViewItem Content="Trade-Ins" Tag="TradeIns" Icon="Switch" />
+            <NavigationViewItem Content="Device Triage" Tag="DeviceTriage" Icon="Admin" />
 
             <NavigationViewItem Content="Vendors" Tag="Vendors" Icon="People" />
             <NavigationViewItem Content="Bills" Tag="Bills" Icon="Document" />

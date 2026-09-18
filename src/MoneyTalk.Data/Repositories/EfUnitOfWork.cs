@@ -42,6 +42,7 @@ public class EfUnitOfWork : IUnitOfWork
         DeviceBrands = new GenericRepository<DeviceBrand>(context);
         DeviceCategories = new GenericRepository<DeviceCategory>(context);
         DeviceModels = new GenericRepository<DeviceModel>(context);
+        DeviceTriageRecords = new GenericRepository<DeviceTriageRecord>(context);
     }
 
     public IRepository<Company> Companies { get; }
@@ -74,6 +75,7 @@ public class EfUnitOfWork : IUnitOfWork
     public IRepository<DeviceBrand> DeviceBrands { get; }
     public IRepository<DeviceCategory> DeviceCategories { get; }
     public IRepository<DeviceModel> DeviceModels { get; }
+    public IRepository<DeviceTriageRecord> DeviceTriageRecords { get; }
 
     public Task<int> SaveChangesAsync(CancellationToken ct = default) => _context.SaveChangesAsync(ct);
 

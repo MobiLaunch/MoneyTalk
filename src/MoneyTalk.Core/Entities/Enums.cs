@@ -210,3 +210,25 @@ public enum ScreenCondition
     Cracked,
     Shattered
 }
+
+/// <summary>Which platform a device-triage record is tracking. Note what this app can actually do
+/// per platform is very uneven — see <c>DeviceTriageService</c>/<c>NativeToolLauncherService</c>
+/// for what each one really supports (Android gets real ADB-driven diagnostics/backup; the rest
+/// get an intake checklist plus a launch button for whatever native tool that platform offers).</summary>
+public enum DeviceTriagePlatform
+{
+    Ios,
+    Android,
+    ChromeOs,
+    Windows,
+    MacOs
+}
+
+public enum DeviceTriageStatus
+{
+    Intake,
+    BackingUp,
+    Diagnosing,
+    Restoring,
+    Complete
+}

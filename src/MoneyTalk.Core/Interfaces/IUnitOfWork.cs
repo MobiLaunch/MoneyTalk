@@ -38,6 +38,7 @@ public interface IUnitOfWork : IDisposable
     IRepository<DeviceBrand> DeviceBrands { get; }
     IRepository<DeviceCategory> DeviceCategories { get; }
     IRepository<DeviceModel> DeviceModels { get; }
+    IRepository<DeviceTriageRecord> DeviceTriageRecords { get; }
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

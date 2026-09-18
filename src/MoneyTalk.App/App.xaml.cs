@@ -175,6 +175,7 @@ public partial class App : Application
         services.AddTransient<UsersViewModel>();
         services.AddTransient<LabelEditorViewModel>();
         services.AddTransient<ReceiptEditorViewModel>();
+        services.AddTransient<DeviceTriageViewModel>();
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
