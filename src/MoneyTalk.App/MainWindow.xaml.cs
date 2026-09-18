@@ -145,10 +145,17 @@ public sealed partial class MainWindow : Window
         {
             var companies = await uow.Companies.GetAllAsync();
             hasAnyCompany = companies.Count > 0;
-            if (hasAnyCompany && settingsService.Load().ActiveCompanyId == null)
+
+            // A stale pointer needs repairing just as much as a missing one: replacing or deleting
+            // the database leaves settings.json naming a company that no longer exists, and because
+            // startup used to treat "id is set" as "id is valid" it skipped onboarding and every
+            // page then failed with "Company profile not found".
+            var settings = settingsService.Load();
+            var activeCompanyExists = settings.ActiveCompanyId.HasValue
+                && companies.Any(c => c.Id == settings.ActiveCompanyId.Value);
+            if (!activeCompanyExists)
             {
-                var settings = settingsService.Load();
-                settings.ActiveCompanyId = companies[0].Id;
+                settings.ActiveCompanyId = hasAnyCompany ? companies[0].Id : null;
                 settingsService.Save(settings);
             }
         }
