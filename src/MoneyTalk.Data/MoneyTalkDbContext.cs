@@ -198,7 +198,7 @@ public class MoneyTalkDbContext : DbContext
         {
             var idProperty = entityType.FindProperty(nameof(EntityBase.Id));
             if (idProperty != null && idProperty.ClrType == typeof(Guid))
-                idProperty.SetValueGenerated(ValueGenerated.Never);
+                idProperty.ValueGenerated = ValueGenerated.Never;
         }
     }
 
