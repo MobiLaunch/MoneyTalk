@@ -16,7 +16,7 @@ public static class CsvImportService
     /// unpackaged app's file picker can resolve an HWND.</summary>
     public static async Task<List<Dictionary<string, string>>?> PickAndParseAsync(Microsoft.UI.Xaml.Window ownerWindow)
     {
-        var picker = new FileOpenPicker { SuggestedStartLocation = PickerLocationId.Documents };
+        var picker = new FileOpenPicker { SuggestedStartLocation = PickerLocationId.DocumentsLibrary };
         picker.FileTypeFilter.Add(".csv");
         InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(ownerWindow));
 
