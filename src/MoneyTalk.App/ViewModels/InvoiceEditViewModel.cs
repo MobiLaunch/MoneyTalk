@@ -189,6 +189,12 @@ public partial class InvoiceEditViewModel : ViewModelBase
 
             await _invoiceService.SaveDraftAsync(uow, invoice);
             _invoiceId = invoice.Id;
+
+            // The live figure shown while editing is a line-sum estimate with no tax in it; the
+            // service applies the configured tax rates on save, so show what was actually stored.
+            SubtotalDisplay = invoice.Subtotal.ToString("C2");
+            TotalDisplay = invoice.Total.ToString("C2");
+            if (IsDraft) BalanceDisplay = invoice.Balance.ToString("C2");
         });
     }
 
