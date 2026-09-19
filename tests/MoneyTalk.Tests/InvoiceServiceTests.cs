@@ -94,4 +94,35 @@ public class InvoiceServiceTests
         var customer = await verifyUow.Customers.GetByIdAsync(customerId);
         Assert.Equal(0m, customer!.Balance);
     }
+
+    [Fact]
+    public async Task RecordPayment_RejectsAnAmountGreaterThanTheInvoiceBalance()
+    {
+        using var db = new TestDatabase();
+        var (companyId, customerId, incomeAccountId, _, bankAccountId) = await SeedAsync(db);
+        var invoiceService = new InvoiceService(new LedgerService());
+
+        Guid invoiceId;
+        using (var uow = db.NewUnitOfWork())
+        {
+            var invoice = new Invoice { CompanyId = companyId, CustomerId = customerId, InvoiceNumber = "INV-OVERPAY" };
+            invoice.Lines.Add(new InvoiceLine { InvoiceId = invoice.Id, Description = "Repair", Quantity = 1, UnitPrice = 100m, IncomeAccountId = incomeAccountId });
+            await invoiceService.SaveDraftAsync(uow, invoice);
+            invoiceId = invoice.Id;
+            await invoiceService.PostInvoiceAsync(uow, invoiceId);
+        }
+
+        using (var uow = db.NewUnitOfWork())
+        {
+            var payment = new Payment { CompanyId = companyId, CustomerId = customerId, Amount = 101m, DepositToAccountId = bankAccountId };
+            payment.Applications.Add(new PaymentApplication { PaymentId = payment.Id, InvoiceId = invoiceId, AmountApplied = 101m });
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => invoiceService.RecordPaymentAsync(uow, payment));
+        }
+
+        using var verifyUow = db.NewUnitOfWork();
+        var invoiceAfter = await verifyUow.Invoices.GetByIdAsync(invoiceId);
+        Assert.Equal(100m, invoiceAfter!.Balance);
+        Assert.Empty(await verifyUow.Payments.GetAllAsync());
+    }
 }
