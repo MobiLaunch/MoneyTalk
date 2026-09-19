@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MoneyTalk.App.Services;
@@ -64,7 +66,25 @@ public partial class PosViewModel : ViewModelBase
         _posService = posService;
         _squareClient = squareClient;
         _secureTokenStore = secureTokenStore;
-        Cart.CollectionChanged += (_, __) => RecalculateTotal();
+        Cart.CollectionChanged += Cart_CollectionChanged;
+    }
+
+    private void Cart_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.OldItems != null)
+            foreach (PosCartRow row in e.OldItems)
+                row.PropertyChanged -= CartRow_PropertyChanged;
+        if (e.NewItems != null)
+            foreach (PosCartRow row in e.NewItems)
+                row.PropertyChanged += CartRow_PropertyChanged;
+
+        RecalculateTotal();
+    }
+
+    private void CartRow_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(PosCartRow.Quantity) or nameof(PosCartRow.UnitPrice) or nameof(PosCartRow.Amount))
+            RecalculateTotal();
     }
 
     [RelayCommand]
