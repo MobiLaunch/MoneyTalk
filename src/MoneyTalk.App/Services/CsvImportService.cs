@@ -90,12 +90,11 @@ public static class CsvImportService
                 row.Add(field.ToString());
                 field.Clear();
             }
-            else if (c == '\r')
+            else if (c == '\r' || c == '\n')
             {
-                // Swallowed; the paired '\n' (or its absence, for a lone '\r' line ending) below ends the row.
-            }
-            else if (c == '\n')
-            {
+                // Accept all common line endings. When CRLF is encountered, consume the LF here
+                // so it produces exactly one record boundary; a lone CR must also end its row.
+                if (c == '\r' && i + 1 < text.Length && text[i + 1] == '\n') i++;
                 row.Add(field.ToString());
                 field.Clear();
                 rows.Add(row);
