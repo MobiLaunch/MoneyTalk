@@ -122,6 +122,23 @@ public class InvoiceService
             ?? throw new InvalidOperationException("Customer not found.");
         if (customer.CompanyId != payment.CompanyId)
             throw new InvalidOperationException("The payment customer does not belong to this company.");
+
+        // Validate every target before posting the journal entry. A rejected application must not
+        // leave an orphaned cash/Accounts Receivable entry behind.
+        var applications = new List<(PaymentApplication Application, Invoice Invoice)>();
+        foreach (var application in payment.Applications)
+        {
+            var invoice = await uow.Invoices.GetByIdAsync(application.InvoiceId, ct)
+                ?? throw new InvalidOperationException($"Invoice {application.InvoiceId} was not found.");
+            if (invoice.CompanyId != payment.CompanyId || invoice.CustomerId != payment.CustomerId)
+                throw new InvalidOperationException("Payments can only be applied to this customer's invoices.");
+            if (invoice.Status is InvoiceStatus.Draft or InvoiceStatus.Void)
+                throw new InvalidOperationException("Payments can only be applied to posted invoices.");
+            if (application.AmountApplied > invoice.Balance)
+                throw new InvalidOperationException($"Cannot apply more than the {invoice.Balance:C2} balance on invoice {invoice.InvoiceNumber}.");
+            applications.Add((application, invoice));
+        }
+
         var arAccountId = company.DefaultArAccountId
             ?? throw new InvalidOperationException("No default Accounts Receivable account is configured for this company.");
 
@@ -138,17 +155,8 @@ public class InvoiceService
 
         await uow.Payments.AddAsync(payment, ct);
 
-        foreach (var application in payment.Applications)
+        foreach (var (application, invoice) in applications)
         {
-            var invoice = await uow.Invoices.GetByIdAsync(application.InvoiceId, ct)
-                ?? throw new InvalidOperationException($"Invoice {application.InvoiceId} was not found.");
-            if (invoice.CompanyId != payment.CompanyId || invoice.CustomerId != payment.CustomerId)
-                throw new InvalidOperationException("Payments can only be applied to this customer's invoices.");
-            if (invoice.Status is InvoiceStatus.Draft or InvoiceStatus.Void)
-                throw new InvalidOperationException("Payments can only be applied to posted invoices.");
-            if (application.AmountApplied > invoice.Balance)
-                throw new InvalidOperationException($"Cannot apply more than the {invoice.Balance:C2} balance on invoice {invoice.InvoiceNumber}.");
-
             invoice.AmountPaid += application.AmountApplied;
             invoice.Balance = invoice.Total - invoice.AmountPaid;
             invoice.Status = invoice.Balance == 0
