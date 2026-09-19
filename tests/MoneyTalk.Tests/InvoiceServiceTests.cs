@@ -124,5 +124,6 @@ public class InvoiceServiceTests
         var invoiceAfter = await verifyUow.Invoices.GetByIdAsync(invoiceId);
         Assert.Equal(100m, invoiceAfter!.Balance);
         Assert.Empty(await verifyUow.Payments.GetAllAsync());
+        Assert.Single(await verifyUow.JournalEntries.GetAllAsync()); // The invoice entry only; no payment entry was posted.
     }
 }
