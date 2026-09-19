@@ -105,11 +105,23 @@ public class InvoiceService
     /// Debit [deposit account] / Credit Accounts Receivable.</summary>
     public async Task<Payment> RecordPaymentAsync(IUnitOfWork uow, Payment payment, CancellationToken ct = default)
     {
-        if (payment.Applications.Sum(a => a.AmountApplied) > payment.Amount)
-            throw new InvalidOperationException("Cannot apply more than the total payment amount.");
+        if (payment.Amount <= 0)
+            throw new InvalidOperationException("Payment amount must be greater than zero.");
+        if (payment.Applications.Count == 0)
+            throw new InvalidOperationException("Apply the payment to at least one invoice.");
+        if (payment.Applications.Any(a => a.AmountApplied <= 0))
+            throw new InvalidOperationException("Each payment application must be greater than zero.");
+        if (payment.Applications.Sum(a => a.AmountApplied) != payment.Amount)
+            throw new InvalidOperationException("The applied amount must equal the total payment amount.");
+        if (payment.Applications.GroupBy(a => a.InvoiceId).Any(g => g.Count() > 1))
+            throw new InvalidOperationException("Apply a payment to an invoice only once.");
 
         var company = await uow.Companies.GetByIdAsync(payment.CompanyId, ct)
             ?? throw new InvalidOperationException("Company profile not found.");
+        var customer = await uow.Customers.GetByIdAsync(payment.CustomerId, ct)
+            ?? throw new InvalidOperationException("Customer not found.");
+        if (customer.CompanyId != payment.CompanyId)
+            throw new InvalidOperationException("The payment customer does not belong to this company.");
         var arAccountId = company.DefaultArAccountId
             ?? throw new InvalidOperationException("No default Accounts Receivable account is configured for this company.");
 
@@ -130,21 +142,24 @@ public class InvoiceService
         {
             var invoice = await uow.Invoices.GetByIdAsync(application.InvoiceId, ct)
                 ?? throw new InvalidOperationException($"Invoice {application.InvoiceId} was not found.");
+            if (invoice.CompanyId != payment.CompanyId || invoice.CustomerId != payment.CustomerId)
+                throw new InvalidOperationException("Payments can only be applied to this customer's invoices.");
+            if (invoice.Status is InvoiceStatus.Draft or InvoiceStatus.Void)
+                throw new InvalidOperationException("Payments can only be applied to posted invoices.");
+            if (application.AmountApplied > invoice.Balance)
+                throw new InvalidOperationException($"Cannot apply more than the {invoice.Balance:C2} balance on invoice {invoice.InvoiceNumber}.");
+
             invoice.AmountPaid += application.AmountApplied;
             invoice.Balance = invoice.Total - invoice.AmountPaid;
-            invoice.Status = invoice.Balance <= 0
+            invoice.Status = invoice.Balance == 0
                 ? InvoiceStatus.Paid
                 : InvoiceStatus.PartiallyPaid;
             invoice.ModifiedAtUtc = DateTime.UtcNow;
             uow.Invoices.Update(invoice);
         }
 
-        var customer = await uow.Customers.GetByIdAsync(payment.CustomerId, ct);
-        if (customer != null)
-        {
-            customer.Balance -= payment.Applications.Sum(a => a.AmountApplied);
-            uow.Customers.Update(customer);
-        }
+        customer.Balance -= payment.Amount;
+        uow.Customers.Update(customer);
 
         await uow.SaveChangesAsync(ct);
         return payment;
